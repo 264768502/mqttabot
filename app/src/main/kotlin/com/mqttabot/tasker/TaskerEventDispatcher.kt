@@ -2,6 +2,8 @@ package com.mqttabot.tasker
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.os.Build
 import com.mqttabot.log.AppLog
 import com.mqttabot.mqtt.ReceivedMessage
 import java.util.concurrent.atomic.AtomicInteger
@@ -23,7 +25,7 @@ object TaskerEventDispatcher {
             .putExtra(TaskerApi.EXTRA_PASS_THROUGH_DATA, data)
     }
 
-    /** Delivers REQUEST_QUERY the way Tasker's own plugin library does. */
+    /** Delivers REQUEST_QUERY like Tasker's plugin library, plus explicit receivers when no service took it. */
     fun dispatch(
         context: Context,
         message: ReceivedMessage,
@@ -47,17 +49,21 @@ object TaskerEventDispatcher {
                 AppLog.w(TAG, "Cannot start ${service.packageName}/${service.name}", e)
             }
         }
-        if (handled.isEmpty()) {
+        // Dynamic receivers (e.g. Tasker < 5.1.5b) only get the implicit broadcast.
+        val implicit = handled.isEmpty()
+        if (implicit) {
             AppLog.d(TAG, "No host service for request $id; sending an implicit broadcast")
             context.sendBroadcast(request)
-            return
         }
-        // Android 8+ drops implicit broadcasts to manifest receivers, so address other hosts directly.
+        // Android 8+ drops implicit broadcasts to manifest receivers, so address those hosts directly.
         for (info in pm.queryBroadcastReceivers(probe, 0)) {
             val receiver = info.activityInfo
-            if (receiver.packageName in handled) continue
+            if (receiver.packageName in handled || (implicit && getsImplicit(receiver.applicationInfo))) continue
             AppLog.d(TAG, "Request $id sent to the receiver ${receiver.packageName}/${receiver.name}")
             context.sendBroadcast(Intent(request).setClassName(receiver.packageName, receiver.name))
         }
     }
+
+    private fun getsImplicit(app: ApplicationInfo) =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.O || app.targetSdkVersion < Build.VERSION_CODES.O
 }

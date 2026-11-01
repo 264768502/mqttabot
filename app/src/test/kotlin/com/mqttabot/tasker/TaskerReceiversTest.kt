@@ -7,6 +7,9 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageInfo
+import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
@@ -26,6 +29,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
 import java.io.IOException
 
 @RunWith(AndroidJUnit4::class)
@@ -203,5 +207,47 @@ class TaskerReceiversTest {
         TaskerEventDispatcher.dispatch(failing, message)
         val sent = shadowOf(context as android.app.Application).broadcastIntents.filter { it.action == TaskerApi.ACTION_REQUEST_QUERY }
         assertNull(sent.single().component)
+    }
+
+    private fun addReceiver(
+        component: ComponentName,
+        targetSdk: Int,
+    ) {
+        val pm = shadowOf(context.packageManager)
+        val app =
+            ApplicationInfo().apply {
+                packageName = component.packageName
+                targetSdkVersion = targetSdk
+            }
+        pm.installPackage(
+            PackageInfo().apply {
+                packageName = component.packageName
+                applicationInfo = app
+            },
+        )
+        pm.addReceiverIfNotPresent(component)
+        pm.addIntentFilterForReceiver(component, IntentFilter(TaskerApi.ACTION_REQUEST_QUERY))
+    }
+
+    private val modern = ComponentName("com.example.modern", "Modern.RequestQueryReceiver")
+    private val legacy = ComponentName("com.example.legacy", "Legacy.RequestQueryReceiver")
+
+    private fun sentRequests() =
+        shadowOf(context as android.app.Application).broadcastIntents.filter { it.action == TaskerApi.ACTION_REQUEST_QUERY }
+
+    @Test
+    fun dispatcherAddressesOreoReceiversWithoutService() {
+        addReceiver(modern, Build.VERSION_CODES.O)
+        addReceiver(legacy, Build.VERSION_CODES.N_MR1)
+        TaskerEventDispatcher.dispatch(context, message)
+        assertEquals(listOf(null, modern), sentRequests().map { it.component })
+    }
+
+    @Test
+    @Config(sdk = [Build.VERSION_CODES.N])
+    fun dispatcherReliesOnImplicitBroadcastBeforeOreo() {
+        addReceiver(modern, Build.VERSION_CODES.O)
+        TaskerEventDispatcher.dispatch(context, message)
+        assertEquals(listOf(null), sentRequests().map { it.component })
     }
 }
