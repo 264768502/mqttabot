@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="qos_levels">
+        <item>0 – 最大 1 回</item>
+        <item>1 – 最低 1 回</item>
+        <item>2 – 正確に 1 回</item>
+    </string-array>
+</resources>

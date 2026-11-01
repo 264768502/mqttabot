@@ -42,6 +42,11 @@ android {
         }
     }
 
+    // Lists the translated locales for Android 13+ per-app language settings.
+    androidResources {
+        generateLocaleConfig = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

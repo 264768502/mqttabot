@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="qos_levels">
+        <item>0 – como máximo una vez</item>
+        <item>1 – al menos una vez</item>
+        <item>2 – exactamente una vez</item>
+    </string-array>
+</resources>

@@ -33,6 +33,7 @@ Android MQTT client + persistent subscription service + Tasker plugin. Written e
 | Built-in brokers | test.mosquitto.org (TCP / TLS / authenticated 1884), broker.hivemq.com, broker.emqx.io, mqtt.eclipseprojects.io (TCP and TLS), or a custom broker; supports username, password, client ID, keep-alive and clean session. |
 | Tasker action | "MqttABot: Publish" — publish MQTT messages from Tasker; topic and payload accept Tasker `%variables`. |
 | Tasker event | "MqttABot: Message received" — received messages trigger Tasker profiles, with topic wildcards (`+`, `#`) and an optional payload regex. Saving the event adds its filter to the subscription list. |
+| Languages | English, Simplified Chinese, Traditional Chinese, Spanish, German, Korean and Japanese. The app follows the system language and falls back to English; on Android 13+ it can also be set per app in system settings. |
 
 ### Using with Tasker
 
