@@ -3,6 +3,16 @@ plugins {
     jacoco
 }
 
+// Release builds pass -PappVersion=X.Y.Z[-suffix] (from the git tag); versionCode is derived from it.
+val appVersion = providers.gradleProperty("appVersion").getOrElse("1.0.0")
+val appVersionCode =
+    requireNotNull(Regex("""(\d+)\.(\d+)\.(\d+)(-[0-9A-Za-z.-]+)?""").matchEntire(appVersion)) {
+        "appVersion must look like 1.2.3 or 1.2.3-beta.1, got '$appVersion'"
+    }.groupValues.let { (_, major, minor, patch) -> major.toInt() * 1_000_000 + minor.toInt() * 1_000 + patch.toInt() }
+
+// Release signing key, supplied by CI via environment variables; falls back to the debug key.
+val releaseKeystore = providers.environmentVariable("SIGNING_KEYSTORE_PATH").orNull
+
 android {
     namespace = "com.mqttabot"
     // Newest AndroidX needs compileSdk 37; runtime behaviour still targets Android 16 (targetSdk 36).
@@ -12,8 +22,19 @@ android {
         applicationId = "com.mqttabot"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = appVersionCode
+        versionName = appVersion
+    }
+
+    signingConfigs {
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = file(releaseKeystore)
+                storePassword = providers.environmentVariable("SIGNING_KEYSTORE_PASSWORD").get()
+                keyAlias = providers.environmentVariable("SIGNING_KEY_ALIAS").get()
+                keyPassword = providers.environmentVariable("SIGNING_KEY_PASSWORD").get()
+            }
+        }
     }
 
     buildTypes {
@@ -22,6 +43,7 @@ android {
         }
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 
@@ -81,6 +103,9 @@ dependencies {
     }
 }
 
+val screenshots = providers.gradleProperty("screenshots").isPresent
+val screenshotDir = rootDir.resolve("docs/screenshots").absolutePath
+
 tasks.withType<Test>().configureEach {
     // Robolectric fetches android-all jars itself; use the same Maven Central mirror.
     systemProperty(
@@ -93,6 +118,14 @@ tasks.withType<Test>().configureEach {
     // -PskipE2e runs only the unit tests (the coverage gate also holds without e2e).
     if (providers.gradleProperty("skipE2e").isPresent) {
         filter.excludeTestsMatching("com.mqttabot.e2e.*")
+    }
+    // -Pscreenshots renders README screenshots only; they are skipped otherwise.
+    if (screenshots) {
+        filter.includeTestsMatching("com.mqttabot.screenshots.*")
+        systemProperty("screenshot.dir", screenshotDir)
+        outputs.upToDateWhen { false }
+    } else {
+        filter.excludeTestsMatching("com.mqttabot.screenshots.*")
     }
     extensions.configure<JacocoTaskExtension> {
         isIncludeNoLocationClasses = true

@@ -1,5 +1,15 @@
 # MqttABot
 
+[![CI](https://github.com/264768502/mqttabot/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/264768502/mqttabot/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/264768502/mqttabot?include_prereleases&sort=semver)](https://github.com/264768502/mqttabot/releases)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](#build-and-test)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Min API](https://img.shields.io/badge/API-24%2B-brightgreen.svg?logo=android&logoColor=white)](https://developer.android.com/about/versions/nougat)
+[![Target SDK](https://img.shields.io/badge/targetSdk-36%20%28Android%2016%29-blue.svg?logo=android&logoColor=white)](https://developer.android.com/about/versions/16)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-7F52FF.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Tasker plugin](https://img.shields.io/badge/Tasker-plugin-orange.svg)](https://tasker.joaoapps.com/)
+[![Last commit](https://img.shields.io/github/last-commit/264768502/mqttabot)](https://github.com/264768502/mqttabot/commits/main)
+
 **English** | [简体中文](README.zh-CN.md)
 
 Android MQTT client + persistent subscription service + Tasker plugin. Written entirely in Kotlin, with no C/C++/JNI code.
@@ -7,6 +17,12 @@ Android MQTT client + persistent subscription service + Tasker plugin. Written e
 - Minimum Android 7.0 (API 24), target Android 16 (API 36), compiled against SDK 37
 - MQTT library: Eclipse Paho `mqttv3` (pure Java)
 - Build: Gradle 9.8 + AGP 9.5 (built-in Kotlin)
+
+## Screenshots
+
+| Main screen | Broker settings | Tasker event |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/main.png" width="260" alt="Main screen"> | <img src="docs/screenshots/broker-settings.png" width="260" alt="Broker settings"> | <img src="docs/screenshots/tasker-event.png" width="260" alt="Tasker event configuration"> |
 
 ## Features
 
@@ -44,6 +60,7 @@ Requires JDK 17+ and the Android SDK (`platforms;android-37.0`, `build-tools;37.
 ./gradlew testDebugUnitTest                     # all JVM tests (unit + end-to-end)
 ./gradlew jacocoUnitTestCoverageVerification -PskipE2e   # verify 100% coverage with unit tests only
 ./gradlew testDebugUnitTest --tests 'com.mqttabot.e2e.*'  # end-to-end tests only
+./gradlew testDebugUnitTest -Pscreenshots               # re-render docs/screenshots/
 ```
 
 Coverage report: `app/build/reports/jacoco/jacocoUnitTestReport/html/index.html`. The gate requires 100% instruction, branch, line, method and class coverage (only generated `R`/`BuildConfig` are excluded).
@@ -63,6 +80,26 @@ Coverage report: `app/build/reports/jacoco/jacocoUnitTestReport/html/index.html`
 - **Dependency locking**: all resolved versions are pinned in `gradle.lockfile`s. After changing dependencies run `./gradlew buildEnvironment :app:dependencies --write-locks`.
 - **Dependency audit**: [OSV-Scanner](https://google.github.io/osv-scanner/) checks the lockfiles against osv.dev: `osv-scanner scan source --recursive --config=osv-scanner.toml .`. Patched versions of vulnerable transitive build/test dependencies are pinned in `settings.gradle.kts`; audited exceptions live in `osv-scanner.toml`.
 - **CI**: GitHub Actions (`.github/workflows/ci.yml`) runs format, lint, tests + coverage, and the dependency audit on every push to `main` and on pull requests.
+
+## Releasing
+
+`.github/workflows/release.yml` builds and publishes a GitHub Release with `mqttabot-<version>-release.apk`, `mqttabot-<version>-debug.apk` and `SHA256SUMS.txt`. Before building it runs the format check, lint, all tests and the coverage gate. Two ways to start it:
+
+- Push a tag: `git tag v1.2.0 && git push origin v1.2.0`
+- Run the **Release** workflow manually (Actions → Release → Run workflow) with a version such as `1.2.0`; it creates the tag itself.
+
+`versionName` is the tag without the `v`, and `versionCode` = `major × 1,000,000 + minor × 1,000 + patch`. Versions with a suffix (e.g. `1.3.0-beta.1`) are published as pre-releases.
+
+**Signing.** Add these repository secrets (Settings → Secrets and variables → Actions) to sign release APKs with your own key:
+
+| Secret | Value |
+| --- | --- |
+| `SIGNING_KEYSTORE_BASE64` | The keystore file, base64-encoded (`base64 -w0 release.jks`) |
+| `SIGNING_KEYSTORE_PASSWORD` | Keystore password |
+| `SIGNING_KEY_ALIAS` | Key alias |
+| `SIGNING_KEY_PASSWORD` | Key password (same as the keystore password for PKCS12 keystores) |
+
+Without them, the release APK is signed with the runner's throwaway debug key, and the release notes say so. Such APKs install fine, but each release has a different signature, so users can't upgrade from one to the next without uninstalling first.
 
 ## Notes
 

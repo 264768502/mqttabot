@@ -1,5 +1,15 @@
 # MqttABot
 
+[![CI](https://github.com/264768502/mqttabot/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/264768502/mqttabot/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/264768502/mqttabot?include_prereleases&sort=semver)](https://github.com/264768502/mqttabot/releases)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](#构建与测试)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Min API](https://img.shields.io/badge/API-24%2B-brightgreen.svg?logo=android&logoColor=white)](https://developer.android.com/about/versions/nougat)
+[![Target SDK](https://img.shields.io/badge/targetSdk-36%20%28Android%2016%29-blue.svg?logo=android&logoColor=white)](https://developer.android.com/about/versions/16)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-7F52FF.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Tasker plugin](https://img.shields.io/badge/Tasker-plugin-orange.svg)](https://tasker.joaoapps.com/)
+[![Last commit](https://img.shields.io/github/last-commit/264768502/mqttabot)](https://github.com/264768502/mqttabot/commits/main)
+
 [English](README.md) | **简体中文**
 
 Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现，无 C/C++/JNI 代码。
@@ -7,6 +17,12 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 - 最低支持 Android 7.0（API 24），目标版本 Android 16（API 36），编译 SDK 37
 - MQTT 库：Eclipse Paho `mqttv3`（纯 Java）
 - 构建：Gradle 9.8 + AGP 9.5（内置 Kotlin）
+
+## 截图
+
+| 主界面 | 服务器设置 | Tasker 事件 |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/main-zh.png" width="260" alt="主界面"> | <img src="docs/screenshots/broker-settings-zh.png" width="260" alt="服务器设置"> | <img src="docs/screenshots/tasker-event-zh.png" width="260" alt="Tasker 事件配置"> |
 
 ## 功能
 
@@ -44,6 +60,7 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 ./gradlew testDebugUnitTest                     # 全部 JVM 测试（单元 + 端到端）
 ./gradlew jacocoUnitTestCoverageVerification -PskipE2e   # 只用单元测试验证 100% 覆盖率
 ./gradlew testDebugUnitTest --tests 'com.mqttabot.e2e.*'  # 只运行端到端测试
+./gradlew testDebugUnitTest -Pscreenshots               # 重新生成 docs/screenshots/
 ```
 
 覆盖率报告：`app/build/reports/jacoco/jacocoUnitTestReport/html/index.html`。门禁要求指令、分支、行、方法、类覆盖率均为 100%（仅排除生成的 `R`/`BuildConfig`）。
@@ -63,6 +80,26 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 - **依赖锁定**：所有解析出的版本固定在 `gradle.lockfile` 中。修改依赖后运行 `./gradlew buildEnvironment :app:dependencies --write-locks`。
 - **依赖审计**：[OSV-Scanner](https://google.github.io/osv-scanner/) 根据 osv.dev 检查锁文件：`osv-scanner scan source --recursive --config=osv-scanner.toml .`。存在漏洞的构建/测试传递依赖的修复版本固定在 `settings.gradle.kts` 中；经审核的例外记录在 `osv-scanner.toml`。
 - **CI**：GitHub Actions（`.github/workflows/ci.yml`）在每次推送到 `main` 及每个 Pull Request 时运行格式检查、lint、测试与覆盖率、依赖审计。
+
+## 版本发布
+
+`.github/workflows/release.yml` 会构建并发布 GitHub Release，附带 `mqttabot-<版本>-release.apk`、`mqttabot-<版本>-debug.apk` 和 `SHA256SUMS.txt`。构建前会运行格式检查、lint、全部测试和覆盖率门禁。两种触发方式：
+
+- 推送 tag：`git tag v1.2.0 && git push origin v1.2.0`
+- 手动运行 **Release** workflow（Actions → Release → Run workflow），填写版本号如 `1.2.0`，workflow 会自动创建 tag。
+
+`versionName` 为去掉 `v` 的 tag，`versionCode` = `主版本 × 1,000,000 + 次版本 × 1,000 + 修订号`。带后缀的版本（如 `1.3.0-beta.1`）会发布为预发布版本。
+
+**签名。** 在仓库 Secrets（Settings → Secrets and variables → Actions）中添加以下内容，即可用自己的密钥签名 release APK：
+
+| Secret | 值 |
+| --- | --- |
+| `SIGNING_KEYSTORE_BASE64` | base64 编码的 keystore 文件（`base64 -w0 release.jks`） |
+| `SIGNING_KEYSTORE_PASSWORD` | keystore 密码 |
+| `SIGNING_KEY_ALIAS` | 密钥别名 |
+| `SIGNING_KEY_PASSWORD` | 密钥密码（PKCS12 keystore 与 keystore 密码相同） |
+
+未配置时，release APK 使用 CI 机器临时生成的 debug 密钥签名，release 说明中会注明。这样的 APK 可以正常安装，但每次发布的签名都不同，用户升级到新版本前需要先卸载旧版本。
 
 ## 说明
 

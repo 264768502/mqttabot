@@ -6,3 +6,9 @@ local.properties
 *.iml
 captures/
 .cxx/
+
+# Signing keys must never be committed.
+*.jks
+*.keystore
+*.p12
+keystore.b64
