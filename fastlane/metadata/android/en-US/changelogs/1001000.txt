@@ -1,0 +1,1 @@
+Tasker: the "Message received" event now fires on Android 8+, as REQUEST_QUERY is delivered directly to Tasker. New Jetpack Compose UI with Material 3 Expressive; theme choice (automatic, light, dark) and dynamic color. Guidance for background activity and notification permission. Optional diagnostic logging with save, share and GitHub issue export.

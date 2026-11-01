@@ -1,0 +1,1 @@
+Tasker：“收到消息”事件现在可在 Android 8 及以上版本触发，REQUEST_QUERY 会直接发送给 Tasker。全新 Jetpack Compose 界面，采用 Material 3 Expressive；可选择主题（自动、浅色、深色），支持动态取色。新增后台活动与通知权限引导。可选的诊断日志，支持保存、分享和导出到 GitHub issue。
