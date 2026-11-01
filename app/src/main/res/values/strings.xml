@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">MqttBot</string>
+    <string name="broker_settings">Broker settings</string>
+
+    <string name="section_status">Connection</string>
+    <string name="section_publish">Publish</string>
+    <string name="section_subscriptions">Subscriptions</string>
+    <string name="section_messages">Received messages</string>
+
+    <string name="status_disconnected">Disconnected</string>
+    <string name="status_connecting">Connecting to %1$s…</string>
+    <string name="status_connected">Connected to %1$s</string>
+    <string name="status_waiting_retry">Reconnecting (%1$s)</string>
+
+    <string name="action_start_service">Start subscription service</string>
+    <string name="action_stop_service">Stop subscription service</string>
+    <string name="action_stop">Stop</string>
+    <string name="action_send">Send</string>
+    <string name="action_add">Add</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+
+    <string name="hint_topic">Topic</string>
+    <string name="hint_payload">Payload</string>
+    <string name="hint_filter">Topic filter (+ and # allowed)</string>
+    <string name="hint_pattern">Payload regex (optional)</string>
+    <string name="hint_host">Host</string>
+    <string name="hint_port">Port</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_client_id">Client ID (blank = auto)</string>
+    <string name="hint_keep_alive">Keep-alive (seconds)</string>
+    <string name="label_preset">Broker preset</string>
+    <string name="label_qos">QoS</string>
+    <string name="label_retain">Retain</string>
+    <string name="label_tls">Use TLS (ssl://)</string>
+    <string name="label_clean_session">Clean session</string>
+    <string name="label_auto_start">Start subscription service on boot</string>
+    <string name="preset_custom">Custom</string>
+
+    <string name="publish_sending">Sending…</string>
+    <string name="publish_ok">Published to %1$s</string>
+    <string name="publish_failed">Publish failed: %1$s</string>
+    <string name="no_subscriptions">No subscriptions yet.</string>
+    <string name="no_messages">No messages received yet.</string>
+    <string name="subscription_item">%1$s (QoS %2$d)</string>
+    <string name="message_item">%1$s  %2$s  [QoS %3$d]\n%4$s</string>
+
+    <string name="error_topic">Enter a topic without + or # wildcards</string>
+    <string name="error_filter">Invalid topic filter</string>
+    <string name="error_pattern">Invalid regular expression</string>
+    <string name="error_host">Enter a host name</string>
+    <string name="error_port">Port must be 1–65535</string>
+    <string name="error_keep_alive">Keep-alive must be 0–65535</string>
+    <string name="error_username">A password requires a username</string>
+
+    <string name="notification_channel_name">MQTT subscription service</string>
+    <string name="notification_title">MqttBot is listening</string>
+
+    <string name="tasker_publish_label">MqttBot: Publish</string>
+    <string name="tasker_event_label">MqttBot: Message received</string>
+    <string name="tasker_publish_hint">Topic and payload may contain Tasker %variables.</string>
+    <string name="tasker_event_hint">Sets %mqtt_topic, %mqtt_payload, %mqtt_qos, %mqtt_retained and %mqtt_received_at. The filter is added to the app\'s subscriptions.</string>
+    <string name="tasker_publish_blurb">Publish to %1$s (QoS %2$d)</string>
+    <string name="tasker_event_blurb">Message on %1$s</string>
+</resources>

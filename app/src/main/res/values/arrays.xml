@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="qos_levels">
+        <item>0 – at most once</item>
+        <item>1 – at least once</item>
+        <item>2 – exactly once</item>
+    </string-array>
+    <!-- Tasker relevant-variable format: name\nlabel\ndescription -->
+    <string-array name="tasker_event_variables" translatable="false">
+        <item>%mqtt_topic\nTopic\nTopic of the received message</item>
+        <item>%mqtt_payload\nPayload\nPayload as UTF-8 text</item>
+        <item>%mqtt_qos\nQoS\nQoS level (0-2)</item>
+        <item>%mqtt_retained\nRetained\ntrue if this is a retained message</item>
+        <item>%mqtt_received_at\nReceived at\nReceive time in epoch milliseconds</item>
+    </string-array>
+</resources>
