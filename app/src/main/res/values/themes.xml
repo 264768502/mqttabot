@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.MqttBot" parent="Theme.Material3.DayNight">
+    <style name="Theme.MqttABot" parent="Theme.Material3.DayNight">
         <item name="colorPrimary">#FF6A1B9A</item>
         <item name="colorSecondary">#FF00897B</item>
     </style>

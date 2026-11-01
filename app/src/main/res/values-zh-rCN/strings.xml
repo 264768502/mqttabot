@@ -50,9 +50,9 @@
     <string name="error_keep_alive">心跳间隔必须在 0–65535 之间</string>
     <string name="error_username">设置密码时必须填写用户名</string>
     <string name="notification_channel_name">MQTT 订阅服务</string>
-    <string name="notification_title">MqttBot 正在监听</string>
-    <string name="tasker_publish_label">MqttBot：发布消息</string>
-    <string name="tasker_event_label">MqttBot：收到消息</string>
+    <string name="notification_title">MqttABot 正在监听</string>
+    <string name="tasker_publish_label">MqttABot：发布消息</string>
+    <string name="tasker_event_label">MqttABot：收到消息</string>
     <string name="tasker_publish_hint">主题和内容可以包含 Tasker %变量。</string>
     <string name="tasker_event_hint">设置变量 %mqtt_topic、%mqtt_payload、%mqtt_qos、%mqtt_retained 和 %mqtt_received_at。该过滤器会自动加入应用的订阅列表。</string>
     <string name="tasker_publish_blurb">发布到 %1$s（QoS %2$d）</string>

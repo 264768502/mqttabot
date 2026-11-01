@@ -1,60 +1,74 @@
-# MqttBot
+# MqttABot
 
-Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现，无 C/C++/JNI 代码。
+**English** | [简体中文](README.zh-CN.md)
 
-- 最低支持 Android 7.0（API 24），目标/编译版本 Android 16（API 36）
-- MQTT 库：Eclipse Paho `mqttv3`（纯 Java）
-- 构建：Gradle 9.8 + AGP 9.5（内置 Kotlin）
+Android MQTT client + persistent subscription service + Tasker plugin. Written entirely in Kotlin, with no C/C++/JNI code.
 
-## 功能
+- Minimum Android 7.0 (API 24), target Android 16 (API 36), compiled against SDK 37
+- MQTT library: Eclipse Paho `mqttv3` (pure Java)
+- Build: Gradle 9.8 + AGP 9.5 (built-in Kotlin)
 
-| 功能 | 说明 |
+## Features
+
+| Feature | Description |
 | --- | --- |
-| 发送消息 | 主界面填写 topic / payload / QoS / retain 后发送。订阅服务运行时复用其长连接，否则建立一次性连接。 |
-| 订阅服务 | `MqttService` 前台服务（`specialUse` 类型），常驻通知显示连接状态并提供“停止”按钮；断线自动重连并重新订阅；可设置开机自启。 |
-| 内置服务器 | test.mosquitto.org（TCP / TLS / 带认证 1884）、broker.hivemq.com、broker.emqx.io、mqtt.eclipseprojects.io（TCP 与 TLS），也可自定义；支持用户名、密码、Client ID、Keep-alive、Clean session。 |
-| Tasker 动作 | “MqttBot: Publish”——在 Tasker 中发送 MQTT 消息，topic 与 payload 支持 Tasker `%变量`。 |
-| Tasker 事件 | “MqttBot: Message received”——订阅到的消息作为 Tasker 触发器，支持 topic 通配符（`+`、`#`）和可选的 payload 正则。保存时自动把过滤器加入订阅列表。 |
+| Publish | Enter topic / payload / QoS / retain on the main screen and send. Reuses the subscription service's long-lived connection when it is running, otherwise opens a one-shot connection. |
+| Subscription service | `MqttService` foreground service (`specialUse` type) with an ongoing notification showing the connection state and a "Stop" action; reconnects and resubscribes automatically; optional start on boot. |
+| Built-in brokers | test.mosquitto.org (TCP / TLS / authenticated 1884), broker.hivemq.com, broker.emqx.io, mqtt.eclipseprojects.io (TCP and TLS), or a custom broker; supports username, password, client ID, keep-alive and clean session. |
+| Tasker action | "MqttABot: Publish" — publish MQTT messages from Tasker; topic and payload accept Tasker `%variables`. |
+| Tasker event | "MqttABot: Message received" — received messages trigger Tasker profiles, with topic wildcards (`+`, `#`) and an optional payload regex. Saving the event adds its filter to the subscription list. |
 
-### Tasker 使用
+### Using with Tasker
 
-1. **发送**：任务 → 添加动作 → 插件 → MqttBot: Publish，填写 topic（如 `home/%room/light`）与 payload（如 `%state`）。
-2. **触发**：配置文件 → 事件 → 插件 → MqttBot: Message received，填写过滤器（如 `sensors/+/temperature`）。
-   确保 App 中已启动订阅服务。事件触发时可用变量：
+1. **Publish**: Task → Add Action → Plugin → MqttABot: Publish, then enter a topic (e.g. `home/%room/light`) and payload (e.g. `%state`).
+2. **Trigger**: Profile → Event → Plugin → MqttABot: Message received, then enter a topic filter (e.g. `sensors/+/temperature`).
+   Make sure the subscription service is running in the app. Variables available when the event fires:
 
-   | 变量 | 含义 |
+   | Variable | Meaning |
    | --- | --- |
-   | `%mqtt_topic` | 消息主题 |
-   | `%mqtt_payload` | 消息内容（UTF-8） |
-   | `%mqtt_qos` | QoS（0–2） |
-   | `%mqtt_retained` | 是否保留消息（true/false） |
-   | `%mqtt_received_at` | 接收时间（毫秒时间戳） |
+   | `%mqtt_topic` | Message topic |
+   | `%mqtt_payload` | Payload (UTF-8) |
+   | `%mqtt_qos` | QoS (0–2) |
+   | `%mqtt_retained` | Whether it is a retained message (true/false) |
+   | `%mqtt_received_at` | Receive time (epoch milliseconds) |
 
-插件实现的是标准 Locale/Tasker 插件协议（`EDIT_SETTING`/`FIRE_SETTING`、`ACTION_EDIT_EVENT`/`REQUEST_QUERY`/`QUERY_CONDITION`），见 `app/src/main/kotlin/com/mqttbot/tasker/`。
+The plugin implements the standard Locale/Tasker plugin protocol (`EDIT_SETTING`/`FIRE_SETTING`, `ACTION_EDIT_EVENT`/`REQUEST_QUERY`/`QUERY_CONDITION`); see `app/src/main/kotlin/com/mqttabot/tasker/`.
 
-## 构建与测试
+## Build and test
 
-需要 JDK 17+ 与 Android SDK（`platforms;android-36`、`build-tools;36.0.0`），在 `local.properties` 中设置 `sdk.dir`。
+Requires JDK 17+ and the Android SDK (`platforms;android-37.0`, `build-tools;37.0.0`); set `sdk.dir` in `local.properties`.
 
 ```bash
-./gradlew assembleDebug                         # 构建 APK
-./gradlew check                                 # lint（警告即失败）+ 全部测试 + 100% 覆盖率门禁
-./gradlew testDebugUnitTest                     # 全部 JVM 测试（单元 + 端到端）
-./gradlew jacocoUnitTestCoverageVerification -PskipE2e   # 只用单元测试验证 100% 覆盖率
-./gradlew testDebugUnitTest --tests 'com.mqttbot.e2e.*'  # 只运行端到端测试
+./gradlew assembleDebug                         # build the APK
+./gradlew check                                 # lint (warnings fail) + all tests + 100% coverage gate
+./gradlew testDebugUnitTest                     # all JVM tests (unit + end-to-end)
+./gradlew jacocoUnitTestCoverageVerification -PskipE2e   # verify 100% coverage with unit tests only
+./gradlew testDebugUnitTest --tests 'com.mqttabot.e2e.*'  # end-to-end tests only
 ```
 
-覆盖率报告：`app/build/reports/jacoco/jacocoUnitTestReport/html/index.html`。门禁要求指令、分支、行、方法、类覆盖率均为 100%（仅排除生成的 `R`/`BuildConfig`）。
+Coverage report: `app/build/reports/jacoco/jacocoUnitTestReport/html/index.html`. The gate requires 100% instruction, branch, line, method and class coverage (only generated `R`/`BuildConfig` are excluded).
 
-### 测试说明
+### About the tests
 
-- 单元测试使用 JUnit4 + Robolectric（默认 API 36，`MinSdkCompatTest` 在 API 24 上运行主要流程）+ MockK。
-- 端到端测试（`app/src/test/kotlin/com/mqttbot/e2e/`）在进程内启动真实 MQTT broker（Moquette，已排除其原生依赖，纯 Java/NIO），App 内使用真实的 Paho 客户端与网络连接，`FakeTasker` 按 Tasker 的协议驱动插件：
-  - `PublishEndToEndTest`：通过 Tasker 编辑界面配置动作 → 变量替换 → `FIRE_SETTING` → broker → 独立订阅者收到消息；以及主界面经订阅服务长连接发送。
-  - `SubscribeEndToEndTest`：通过 Tasker 编辑界面配置事件 → 启动前台服务 → 其他客户端发布消息 → `REQUEST_QUERY` → `QUERY_CONDITION` 返回满足条件及变量；验证 broker 断线后自动重连、重新订阅。
-- 当前环境无 KVM，无法运行模拟器，所以没有 `androidTest` 仪器测试；端到端测试在 Robolectric 中运行。
+- Unit tests use JUnit4 + Robolectric (API 36 by default; `MinSdkCompatTest` runs the main flows on API 24) + MockK.
+- End-to-end tests (`app/src/test/kotlin/com/mqttabot/e2e/`) start a real MQTT broker in-process (Moquette, with its native dependencies excluded so it runs on pure Java/NIO). The app uses the real Paho client over real sockets, and `FakeTasker` drives the plugin using Tasker's protocol:
+  - `PublishEndToEndTest`: configure the action in the Tasker edit screen → variable substitution → `FIRE_SETTING` → broker → an independent subscriber receives the message; also publishing from the main screen over the service's long-lived connection.
+  - `SubscribeEndToEndTest`: configure the event in the Tasker edit screen → start the foreground service → another client publishes → `REQUEST_QUERY` → `QUERY_CONDITION` returns "satisfied" with variables; also verifies automatic reconnect and resubscribe after the broker drops the connection.
+- There are no `androidTest` instrumentation tests yet; the end-to-end tests run on the JVM under Robolectric, without an emulator.
 
-## 说明
+## Development
 
-- 密码保存在应用私有 SharedPreferences 中，并已排除在备份/设备迁移之外。
-- Android 13+ 首次启动服务时会请求通知权限；拒绝后服务照常运行，只是通知不可见。
+- **Formatting**: Spotless + ktlint (`ktlint_official`, rules in `.editorconfig`). `./gradlew spotlessApply` fixes, `./gradlew spotlessCheck` verifies.
+- **pre-commit**: `pip install pre-commit && pre-commit install`. Hooks run formatting, Android lint, unit tests with the 100% coverage gate, the dependency audit and basic file checks; `pre-commit run --all-files` runs them all.
+- **Dependency locking**: all resolved versions are pinned in `gradle.lockfile`s. After changing dependencies run `./gradlew buildEnvironment :app:dependencies --write-locks`.
+- **Dependency audit**: [OSV-Scanner](https://google.github.io/osv-scanner/) checks the lockfiles against osv.dev: `osv-scanner scan source --recursive --config=osv-scanner.toml .`. Patched versions of vulnerable transitive build/test dependencies are pinned in `settings.gradle.kts`; audited exceptions live in `osv-scanner.toml`.
+- **CI**: GitHub Actions (`.github/workflows/ci.yml`) runs format, lint, tests + coverage, and the dependency audit on every push to `main` and on pull requests.
+
+## Notes
+
+- Passwords are stored in the app's private SharedPreferences and are excluded from backup and device transfer.
+- On Android 13+, starting the service the first time asks for notification permission; if denied, the service still runs, but its notification is hidden.
+
+## License
+
+[MIT](LICENSE)

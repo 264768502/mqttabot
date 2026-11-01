@@ -1,8 +1,10 @@
 [versions]
 agp = "9.5.0"
-appcompat = "1.7.1"
-material = "1.13.0"
-coreKtx = "1.17.0"
+# Overrides the Kotlin version bundled with AGP's built-in Kotlin support.
+kotlin = "2.4.21"
+appcompat = "1.8.0"
+material = "1.14.0"
+coreKtx = "1.19.1"
 paho = "1.2.5"
 junit = "4.13.2"
 robolectric = "4.17"
@@ -11,8 +13,11 @@ androidxTestJunit = "1.3.0"
 mockk = "1.14.11"
 moquette = "0.17"
 jacoco = "0.8.16"
+spotless = "8.10.4"
+ktlint = "1.8.0"
 
 [libraries]
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
@@ -26,3 +31,4 @@ moquette = { module = "io.moquette:moquette-broker", version.ref = "moquette" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

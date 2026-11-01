@@ -1,0 +1,43 @@
+# Install: pip install pre-commit && pre-commit install --install-hooks
+# Run everything: pre-commit run --all-files
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+        exclude: ^gradlew\.bat$
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+
+  - repo: https://github.com/google/osv-scanner
+    rev: v2.7.0
+    hooks:
+      - id: osv-scanner
+        name: Dependency audit (osv-scanner)
+        args: [scan, source, --recursive, --config=osv-scanner.toml, --verbosity=error, .]
+
+  - repo: local
+    hooks:
+      - id: spotless
+        name: Format (spotlessApply)
+        entry: ./gradlew spotlessApply --quiet
+        language: system
+        pass_filenames: false
+        files: \.(kt|kts|xml)$
+      - id: android-lint
+        name: Android lint
+        entry: ./gradlew :app:lintDebug --quiet
+        language: system
+        pass_filenames: false
+        files: ^(app/|gradle/|.*\.gradle\.kts$|.*\.lockfile$)
+      - id: unit-tests
+        name: Unit tests + 100% coverage gate
+        entry: ./gradlew :app:jacocoUnitTestCoverageVerification -PskipE2e --quiet
+        language: system
+        pass_filenames: false
+        files: ^(app/|gradle/|.*\.gradle\.kts$|.*\.lockfile$)

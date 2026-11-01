@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">MqttBot</string>
+    <string name="app_name" translatable="false">MqttABot</string>
     <string name="broker_settings">Broker settings</string>
 
     <string name="section_status">Connection</string>
@@ -58,10 +58,10 @@
     <string name="error_username">A password requires a username</string>
 
     <string name="notification_channel_name">MQTT subscription service</string>
-    <string name="notification_title">MqttBot is listening</string>
+    <string name="notification_title">MqttABot is listening</string>
 
-    <string name="tasker_publish_label">MqttBot: Publish</string>
-    <string name="tasker_event_label">MqttBot: Message received</string>
+    <string name="tasker_publish_label">MqttABot: Publish</string>
+    <string name="tasker_event_label">MqttABot: Message received</string>
     <string name="tasker_publish_hint">Topic and payload may contain Tasker %variables.</string>
     <string name="tasker_event_hint">Sets %mqtt_topic, %mqtt_payload, %mqtt_qos, %mqtt_retained and %mqtt_received_at. The filter is added to the app\'s subscriptions.</string>
     <string name="tasker_publish_blurb">Publish to %1$s (QoS %2$d)</string>

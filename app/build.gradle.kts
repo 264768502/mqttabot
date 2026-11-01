@@ -4,11 +4,12 @@ plugins {
 }
 
 android {
-    namespace = "com.mqttbot"
-    compileSdk = 36
+    namespace = "com.mqttabot"
+    // Newest AndroidX needs compileSdk 37; runtime behaviour still targets Android 16 (targetSdk 36).
+    compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.mqttbot"
+        applicationId = "com.mqttabot"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -39,13 +40,20 @@ android {
     lint {
         warningsAsErrors = true
         abortOnError = true
-        // Android 16 (API 36) is the deliberate target; newer SDKs / libraries are not wanted yet.
+        // targetSdk 36 (Android 16) is deliberate. Version-freshness checks would break CI on every
+        // upstream release; dependency upgrades are done explicitly instead.
         disable += setOf("OldTargetApi", "GradleDependency", "AndroidGradlePluginVersion", "NewerVersionAvailable")
     }
 
     packaging {
         resources.excludes += setOf("META-INF/INDEX.LIST", "META-INF/io.netty.versions.properties")
     }
+}
+
+// Pin every resolved dependency in gradle.lockfile (reproducible builds; scanned by osv-scanner).
+// After changing dependencies run: ./gradlew :app:dependencies --write-locks
+dependencyLocking {
+    lockAllConfigurations()
 }
 
 jacoco {
@@ -84,7 +92,7 @@ tasks.withType<Test>().configureEach {
     jvmArgs("--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")
     // -PskipE2e runs only the unit tests (the coverage gate also holds without e2e).
     if (providers.gradleProperty("skipE2e").isPresent) {
-        filter.excludeTestsMatching("com.mqttbot.e2e.*")
+        filter.excludeTestsMatching("com.mqttabot.e2e.*")
     }
     extensions.configure<JacocoTaskExtension> {
         isIncludeNoLocationClasses = true
@@ -93,9 +101,10 @@ tasks.withType<Test>().configureEach {
 }
 
 // Unit-test coverage gate: every instruction, branch, line, method and class must be covered.
-val coverageClassDirs = fileTree(layout.buildDirectory.dir("intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes")) {
-    exclude("**/R.class", "**/R$*.class", "**/BuildConfig.*", "**/Manifest*.*")
-}
+val coverageClassDirs =
+    fileTree(layout.buildDirectory.dir("intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes")) {
+        exclude("**/R.class", "**/R$*.class", "**/BuildConfig.*", "**/Manifest*.*")
+    }
 val coverageData = files(layout.buildDirectory.file("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec"))
 
 val jacocoUnitTestReport by tasks.registering(JacocoReport::class) {

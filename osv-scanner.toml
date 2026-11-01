@@ -1,0 +1,11 @@
+# Audited exceptions for osv-scanner (https://google.github.io/osv-scanner/configuration/).
+
+# Moquette is only the in-process test broker bound to 127.0.0.1 in unit/e2e tests; it never
+# ships in the APK. The fix (0.18.1) is not published to Maven Central.
+[[IgnoredVulns]]
+id = "GHSA-5f42-97gr-vfhq"
+reason = "Test-only localhost broker; fixed version not on Maven Central"
+
+[[IgnoredVulns]]
+id = "GHSA-9jjc-fw8x-fmwx"
+reason = "Test-only localhost broker; fixed version not on Maven Central"
