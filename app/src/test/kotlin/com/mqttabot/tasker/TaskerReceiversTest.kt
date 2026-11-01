@@ -4,7 +4,9 @@ import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
@@ -154,5 +156,52 @@ class TaskerReceiversTest {
         val id2 = sent[1].getBundleExtra(TaskerApi.EXTRA_PASS_THROUGH_DATA)!!.getInt(TaskerApi.KEY_PASS_THROUGH_MESSAGE_ID)
         assertTrue(id1 > 0 && id2 > 0 && id1 != id2)
         assertNull(first.`package`)
+        assertNull(first.component)
+    }
+
+    private val tasker = ComponentName("net.dinglisch.android.taskerm", "Tasker.RequestQueryService")
+
+    private fun addHost(
+        service: ComponentName?,
+        vararg receivers: ComponentName,
+    ) {
+        val pm = shadowOf(context.packageManager)
+        val filter = IntentFilter(TaskerApi.ACTION_REQUEST_QUERY)
+        service?.let {
+            pm.addServiceIfNotPresent(it)
+            pm.addIntentFilterForService(it, filter)
+        }
+        for (r in receivers) {
+            pm.addReceiverIfNotPresent(r)
+            pm.addIntentFilterForReceiver(r, filter)
+        }
+    }
+
+    @Test
+    fun dispatcherTargetsHostServicesAndOtherReceivers() {
+        val taskerReceiver = ComponentName(tasker.packageName, "Tasker.RequestQueryReceiver")
+        val locale = ComponentName("com.twofortyfouram.locale", "Locale.RequestQueryReceiver")
+        addHost(tasker, taskerReceiver, locale)
+        TaskerEventDispatcher.dispatch(context, message)
+
+        val app = shadowOf(context as android.app.Application)
+        val started = app.nextStartedService!!
+        assertEquals(tasker, started.component)
+        assertEquals(message, MessageBundles.fromPassThrough(started.getBundleExtra(TaskerApi.EXTRA_PASS_THROUGH_DATA)))
+        val sent = app.broadcastIntents.filter { it.action == TaskerApi.ACTION_REQUEST_QUERY }
+        assertEquals(listOf(locale), sent.map { it.component })
+        assertTrue(sent.single().flags and Intent.FLAG_RECEIVER_FOREGROUND != 0)
+    }
+
+    @Test
+    fun dispatcherFallsBackToBroadcastWhenServiceFails() {
+        addHost(tasker)
+        val failing =
+            object : ContextWrapper(context) {
+                override fun startService(service: Intent): ComponentName = throw IllegalStateException("background")
+            }
+        TaskerEventDispatcher.dispatch(failing, message)
+        val sent = shadowOf(context as android.app.Application).broadcastIntents.filter { it.action == TaskerApi.ACTION_REQUEST_QUERY }
+        assertNull(sent.single().component)
     }
 }
