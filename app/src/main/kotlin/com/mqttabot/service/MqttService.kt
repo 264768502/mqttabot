@@ -4,10 +4,10 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.mqttabot.AppGraph
+import com.mqttabot.log.AppLog
 import com.mqttabot.mqtt.ConnectionController
 import com.mqttabot.mqtt.ConnectionStatus
 import com.mqttabot.mqtt.ReceivedMessage
@@ -21,6 +21,7 @@ class MqttService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        AppLog.i(TAG, "Created")
         notifications = ServiceNotifications(this)
     }
 
@@ -31,7 +32,10 @@ class MqttService : Service() {
         flags: Int,
         startId: Int,
     ): Int {
+        // A null intent means Android restarted the sticky service after killing the process.
+        AppLog.i(TAG, "Start command: action=${intent?.action}, flags=$flags, startId=$startId")
         if (intent?.action == ACTION_STOP) {
+            AppLog.i(TAG, "Stop requested from the notification")
             stopSelf()
             return START_NOT_STICKY
         }
@@ -39,7 +43,7 @@ class MqttService : Service() {
             AppGraph.foregroundStarter(this, ServiceNotifications.NOTIFICATION_ID, notifications.build(AppGraph.status.value))
         } catch (e: RuntimeException) {
             // E.g. ForegroundServiceStartNotAllowedException when restarted from the background.
-            Log.w(TAG, "Cannot enter foreground", e)
+            AppLog.w(TAG, "Cannot enter foreground; stopping", e)
             stopSelf()
             return START_NOT_STICKY
         }
@@ -59,6 +63,7 @@ class MqttService : Service() {
     }
 
     override fun onDestroy() {
+        AppLog.i(TAG, "Destroyed")
         AppGraph.status.remove(statusListener)
         controller?.let {
             it.stop()

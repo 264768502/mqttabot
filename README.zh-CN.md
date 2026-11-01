@@ -42,15 +42,15 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 
 ## 截图
 
-| 主界面 | 消息 | 服务器设置 | Tasker 事件 |
-| :---: | :---: | :---: | :---: |
-| <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/1_main.png" width="200" alt="主界面"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/2_messages.png" width="200" alt="消息"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/3_broker_settings.png" width="200" alt="服务器设置"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/4_tasker_event.png" width="200" alt="Tasker 事件配置"> |
+| 主界面 | 消息 | 服务器设置 | Tasker 事件 | 诊断 |
+| :---: | :---: | :---: | :---: | :---: |
+| <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/1_main.png" width="160" alt="主界面"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/2_messages.png" width="160" alt="消息"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/3_broker_settings.png" width="160" alt="服务器设置"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/4_tasker_event.png" width="160" alt="Tasker 事件"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/5_diagnostics.png" width="160" alt="诊断"> |
 
 深色主题：
 
-| | | | |
-| :---: | :---: | :---: | :---: |
-| <img src="docs/screenshots/dark/1_main.png" width="200" alt="主界面（深色）"> | <img src="docs/screenshots/dark/2_messages.png" width="200" alt="消息（深色）"> | <img src="docs/screenshots/dark/3_broker_settings.png" width="200" alt="服务器设置（深色）"> | <img src="docs/screenshots/dark/4_tasker_event.png" width="200" alt="Tasker 事件（深色）"> |
+| | | | | |
+| :---: | :---: | :---: | :---: | :---: |
+| <img src="docs/screenshots/dark/1_main.png" width="160" alt="主界面（深色）"> | <img src="docs/screenshots/dark/2_messages.png" width="160" alt="消息（深色）"> | <img src="docs/screenshots/dark/3_broker_settings.png" width="160" alt="服务器设置（深色）"> | <img src="docs/screenshots/dark/4_tasker_event.png" width="160" alt="Tasker 事件（深色）"> | <img src="docs/screenshots/dark/5_diagnostics.png" width="160" alt="诊断（深色）"> |
 
 ## 功能
 
@@ -65,6 +65,7 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 | 主题 | 自动（07:00–19:00 浅色，其余时间深色，到点实时切换），或始终浅色 / 始终深色；在顶部栏选择。 |
 | 后台活动 | 主界面显示本应用的电池用量设置（不受限制 / 已优化 / 受限），并直达对应的系统界面以允许不受限制的后台活动，保证熄屏时订阅不中断。 |
 | 权限 | 仅在需要时申请：启动服务时申请通知权限（Android 13+）。用户拒绝后，应用会说明为什么需要该权限，并提供跳转到系统设置的入口。 |
+| 诊断日志 | 可选（诊断界面，虫子图标）。记录连接、订阅、服务、Tasker 和界面操作以及崩溃信息，仅凭日志即可分析问题；从不记录密码，消息内容只保留开头一小段。总大小上限 2 MB（4 个轮转文件）。保存在应用专属存储（`Android/data/com.mqttabot/files/logs/`）；界面会显示日志路径，并可通过系统文件选择器保存日志、分享日志，或打开 GitHub issue 以附上日志。 |
 | 多语言 | 英文、简体中文、繁体中文、西班牙文、德文、韩文和日文。自动跟随系统语言，不支持的语言显示英文；Android 13+ 还可以在系统设置中单独为本应用选择语言。 |
 
 ### Tasker 使用

@@ -1,5 +1,6 @@
 package com.mqttabot.mqtt
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mqttabot.data.Subscription
 import com.mqttabot.testutil.FakeGateway
 import com.mqttabot.testutil.ManualTaskRunner
@@ -8,8 +9,11 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.runner.RunWith
 import java.io.IOException
 
+// Robolectric: the code under test logs through android.util.Log.
+@RunWith(AndroidJUnit4::class)
 class ConnectionControllerTest {
     private val config = BrokerConfig(host = "h")
     private var subs = listOf(Subscription("a/#", 1), Subscription("b", 0))

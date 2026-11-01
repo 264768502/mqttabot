@@ -82,4 +82,17 @@
     <string name="theme_auto">自動（19:00–07:00 深色）</string>
     <string name="theme_light">淺色</string>
     <string name="theme_dark">深色</string>
+    <string name="diagnostics_title">診斷</string>
+    <string name="log_enable">儲存診斷記錄</string>
+    <string name="log_description">記錄連線、訂閱、服務、Tasker 和畫面操作，僅憑記錄即可分析問題。密碼永遠不會被記錄；會記錄主題和訊息內容的開頭部分。公開分享前請先檢查記錄。</string>
+    <string name="log_location">記錄檔</string>
+    <string name="log_size">%1$s，上限 %2$s</string>
+    <string name="log_steps_title">回報問題</string>
+    <string name="log_steps">1. 開啟診斷記錄。\n2. 重現問題。\n3. 儲存或分享記錄。\n4. 在 GitHub 上建立 issue，描述發生了什麼並附上記錄。</string>
+    <string name="action_share_log">分享記錄</string>
+    <string name="action_save_log">儲存記錄…</string>
+    <string name="action_report_issue">在 GitHub 上回報</string>
+    <string name="action_clear_log">清除記錄</string>
+    <string name="log_saved">記錄已儲存。</string>
+    <string name="log_save_failed">無法儲存記錄：%1$s</string>
 </resources>

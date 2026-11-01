@@ -67,6 +67,7 @@ import com.mqttabot.AppGraph
 import com.mqttabot.R
 import com.mqttabot.data.Subscription
 import com.mqttabot.data.ThemeMode
+import com.mqttabot.log.AppLog
 import com.mqttabot.mqtt.ReceivedMessage
 import com.mqttabot.mqtt.Topics
 import com.mqttabot.service.MqttService
@@ -77,6 +78,7 @@ import java.util.Locale
 const val TAG_MAIN_LIST = "main_list"
 const val TAG_SETTINGS = "open_settings"
 const val TAG_THEME = "theme"
+const val TAG_DIAGNOSTICS = "open_diagnostics"
 
 /** Radio rows of the theme dialog are tagged "$TAG_THEME_OPTION-<ThemeMode name>". */
 const val TAG_THEME_OPTION = "theme_option"
@@ -103,6 +105,8 @@ const val TAG_CLEAR_MESSAGES = "clear_messages"
 const val TAG_NO_MESSAGES = "no_messages"
 const val TAG_MESSAGE = "message"
 
+private const val TAG = "MainScreen"
+
 /** Last manual publish; the message takes the topic or error as its argument. */
 enum class PublishOutcome(
     val message: Int,
@@ -127,6 +131,7 @@ enum class Explanation(
 fun MainScreen(
     background: BackgroundMode,
     onOpenSettings: () -> Unit,
+    onOpenDiagnostics: () -> Unit,
     onToggleService: () -> Unit,
     onAllowBackground: () -> Unit,
 ) {
@@ -150,6 +155,9 @@ fun MainScreen(
                     IconButton(onClick = { choosingTheme = true }, modifier = Modifier.testTag(TAG_THEME)) {
                         Icon(painterResource(R.drawable.ic_contrast), contentDescription = stringResource(R.string.theme_title))
                     }
+                    IconButton(onClick = onOpenDiagnostics, modifier = Modifier.testTag(TAG_DIAGNOSTICS)) {
+                        Icon(painterResource(R.drawable.ic_bug_report), contentDescription = stringResource(R.string.diagnostics_title))
+                    }
                     IconButton(onClick = onOpenSettings, modifier = Modifier.testTag(TAG_SETTINGS)) {
                         Icon(painterResource(R.drawable.ic_settings), contentDescription = stringResource(R.string.broker_settings))
                     }
@@ -162,17 +170,12 @@ fun MainScreen(
             modifier =
                 Modifier
                     .fillMaxSize()
+                    // Below the app bar, so items scrolled into view are never hidden under it.
+                    .padding(top = padding.calculateTopPadding())
                     .consumeWindowInsets(padding)
                     .imePadding()
                     .testTag(TAG_MAIN_LIST),
-            contentPadding =
-                PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = padding.calculateTopPadding() + 4.dp,
-                    bottom =
-                        padding.calculateBottomPadding() + 24.dp,
-                ),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = padding.calculateBottomPadding() + 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             // Segments of the message list sit 2dp apart; cards add their own larger gap.
             verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -347,7 +350,11 @@ private fun PublishCard() {
     fun publish() {
         val topicText = topic.trim()
         topicError = !Topics.isValidTopicName(topicText)
-        if (topicError) return
+        if (topicError) {
+            AppLog.i(TAG, "Publish rejected: invalid topic ${AppLog.preview(topicText)}")
+            return
+        }
+        AppLog.i(TAG, "Publish requested from the main screen")
         outcome = PublishOutcome.SENDING
         val (payloadText, qosLevel, retained) = Triple(payload, qos, retain)
         AppGraph.ioExecutor.execute {
@@ -356,6 +363,7 @@ private fun PublishCard() {
                     AppGraph.publisher().publish(topicText, payloadText, qosLevel, retained)
                     PublishOutcome.OK to topicText
                 } catch (e: Exception) {
+                    AppLog.w(TAG, "Publish from the main screen failed", e)
                     PublishOutcome.FAILED to e.toString()
                 }
             ContextCompat.getMainExecutor(context).execute {
@@ -423,8 +431,12 @@ private fun SubscriptionsCard(
     fun add() {
         val filterText = filter.trim()
         filterError = !Topics.isValidFilter(filterText)
-        if (filterError) return
+        if (filterError) {
+            AppLog.i(TAG, "Subscription rejected: invalid filter ${AppLog.preview(filterText)}")
+            return
+        }
         val subscription = Subscription(filterText, qos)
+        AppLog.i(TAG, "Subscription added: $filterText (QoS $qos)")
         AppGraph.settings.addSubscription(subscription)
         AppGraph.controller?.subscribe(subscription)
         filter = ""
@@ -456,6 +468,7 @@ private fun SubscriptionsCard(
         Column(Modifier.padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             for (s in subscriptions) {
                 SubscriptionItem(s) {
+                    AppLog.i(TAG, "Subscription removed: ${s.filter}")
                     AppGraph.settings.removeSubscription(s.filter)
                     AppGraph.controller?.unsubscribe(s.filter)
                     onChanged()
@@ -510,7 +523,7 @@ private fun MessagesHeader(empty: Boolean) {
     ) {
         Column(Modifier.padding(start = 20.dp, end = 8.dp, top = 12.dp, bottom = 12.dp)) {
             CardTitle(stringResource(R.string.section_messages), R.drawable.ic_inbox) {
-                TextButton(onClick = AppGraph.messageLog::clear, modifier = Modifier.testTag(TAG_CLEAR_MESSAGES)) {
+                TextButton(onClick = ::clearMessages, modifier = Modifier.testTag(TAG_CLEAR_MESSAGES)) {
                     Icon(
                         painterResource(R.drawable.ic_delete_sweep),
                         contentDescription = null,
@@ -523,6 +536,11 @@ private fun MessagesHeader(empty: Boolean) {
             if (empty) EmptyText(stringResource(R.string.no_messages), TAG_NO_MESSAGES)
         }
     }
+}
+
+private fun clearMessages() {
+    AppLog.i(TAG, "Received messages cleared")
+    AppGraph.messageLog.clear()
 }
 
 @Composable

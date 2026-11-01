@@ -9,6 +9,9 @@ import androidx.core.app.ServiceCompat
 import com.mqttabot.data.MessageLog
 import com.mqttabot.data.SettingsRepository
 import com.mqttabot.data.ThemeMode
+import com.mqttabot.log.AppLog
+import com.mqttabot.log.Diagnostics
+import com.mqttabot.log.LogFile
 import com.mqttabot.mqtt.ConnectionController
 import com.mqttabot.mqtt.ConnectionStatus
 import com.mqttabot.mqtt.ExecutorTaskRunner
@@ -29,6 +32,17 @@ object AppGraph {
 
     lateinit var settings: SettingsRepository
         private set
+
+    private lateinit var appContext: Context
+
+    /** Diagnostic log on disk; written to only while [diagnosticLogging] is on. */
+    lateinit var logFile: LogFile
+        private set
+
+    val diagnosticLogging = Observable(false)
+
+    // One writer thread for the log file, kept for the process lifetime.
+    private val logWriter = Executors.newSingleThreadExecutor { Thread(it, "log-writer").apply { isDaemon = true } }
     val status = Observable(ConnectionStatus.DISCONNECTED)
     val messageLog = MessageLog()
 
@@ -53,7 +67,12 @@ object AppGraph {
     @Volatile var controller: ConnectionController? = null
 
     fun init(context: Context) {
-        settings = SettingsRepository(context.applicationContext)
+        appContext = context.applicationContext
+        settings = SettingsRepository(appContext)
+        logFile = LogFile(Diagnostics.logDirectory(appContext), logWriter)
+        diagnosticLogging.clearListeners()
+        diagnosticLogging.set(settings.diagnosticLogging)
+        AppLog.file = if (settings.diagnosticLogging) logFile else null
         gatewayFactory = defaultGatewayFactory
         taskRunnerFactory = defaultTaskRunnerFactory
         ioExecutor = defaultIoExecutor
@@ -69,7 +88,16 @@ object AppGraph {
         messageLog.clear()
     }
 
+    fun setDiagnosticLogging(enabled: Boolean) {
+        if (!enabled) AppLog.i(TAG, "Diagnostic logging turned off")
+        settings.diagnosticLogging = enabled
+        diagnosticLogging.set(enabled)
+        AppLog.file = if (enabled) logFile else null
+        if (enabled) AppLog.i(TAG, "Diagnostic logging turned on\n" + Diagnostics.report(appContext))
+    }
+
     fun setThemeMode(mode: ThemeMode) {
+        AppLog.i(TAG, "Theme set to $mode")
         settings.themeMode = mode
         themeMode.set(mode)
     }
@@ -93,4 +121,6 @@ object AppGraph {
         id: Int,
         notification: Notification,
     ) = ServiceCompat.startForeground(service, id, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+
+    private const val TAG = "AppGraph"
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mqttabot.data.ThemeMode
+import com.mqttabot.log.AppLog
 import com.mqttabot.mqtt.ConnectionState
 import com.mqttabot.mqtt.ConnectionStatus
 import com.mqttabot.mqtt.ExecutorTaskRunner
@@ -11,6 +12,7 @@ import com.mqttabot.mqtt.PahoMqttGateway
 import com.mqttabot.mqtt.ReceivedMessage
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -51,5 +53,29 @@ class AppGraphTest {
         assertTrue(runner is ExecutorTaskRunner)
         runner.shutdown()
         AppGraph.publisher()
+    }
+
+    @Test
+    fun diagnosticLoggingTogglesTheFileSink() {
+        assertNull(AppLog.file)
+        AppGraph.setDiagnosticLogging(true)
+        assertSame(AppGraph.logFile, AppLog.file)
+        assertTrue(AppGraph.diagnosticLogging.value)
+        AppLog.i("T", "recorded")
+        AppGraph.setDiagnosticLogging(false)
+        assertNull(AppLog.file)
+        AppLog.i("T", "not recorded")
+        val text = AppGraph.logFile.afterPendingWrites { AppGraph.logFile.current.readText() }
+        assertTrue(text.contains("Diagnostic logging turned on"))
+        assertTrue(text.contains("MqttABot diagnostic report"))
+        assertTrue(text.contains("recorded"))
+        assertTrue(text.contains("Diagnostic logging turned off"))
+        assertTrue(!text.contains("not recorded"))
+
+        // The setting survives a restart.
+        AppGraph.setDiagnosticLogging(true)
+        AppGraph.init(context)
+        assertSame(AppGraph.logFile.dir, (AppLog.file ?: error("enabled")).dir)
+        AppGraph.logFile.clear()
     }
 }

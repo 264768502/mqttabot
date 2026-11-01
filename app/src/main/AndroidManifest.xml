@@ -47,6 +47,23 @@
             android:label="@string/broker_settings"
             android:parentActivityName=".ui.MainActivity" />
 
+        <activity
+            android:name=".ui.DiagnosticsActivity"
+            android:exported="false"
+            android:label="@string/diagnostics_title"
+            android:parentActivityName=".ui.MainActivity"
+            android:windowSoftInputMode="adjustResize" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.logs"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/log_paths" />
+        </provider>
+
         <!-- Tasker action plugin: publish an MQTT message. -->
         <activity
             android:name=".tasker.PublishActionActivity"

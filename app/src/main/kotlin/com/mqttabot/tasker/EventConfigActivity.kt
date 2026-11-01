@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.mqttabot.AppGraph
 import com.mqttabot.R
 import com.mqttabot.data.Subscription
+import com.mqttabot.log.AppLog
 import com.mqttabot.mqtt.Topics
 import com.mqttabot.ui.FormField
 import com.mqttabot.ui.QosSelector
@@ -29,6 +30,7 @@ class EventConfigActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val initial = EventFilterConfig.fromBundle(intent.getBundleExtra(TaskerApi.EXTRA_BUNDLE))
+        AppLog.i(TAG, "Opened: ${initial ?: "new"}")
         setThemedContent {
             var filter by rememberSaveable { mutableStateOf(initial?.topicFilter.orEmpty()) }
             var pattern by rememberSaveable { mutableStateOf(initial?.payloadPattern.orEmpty()) }
@@ -67,6 +69,7 @@ class EventConfigActivity : ComponentActivity() {
     }
 
     private fun cancel() {
+        AppLog.i(TAG, "Cancelled")
         setResult(RESULT_CANCELED)
         finish()
     }
@@ -81,7 +84,12 @@ class EventConfigActivity : ComponentActivity() {
                 .putExtra(TaskerApi.EXTRA_BUNDLE, config.toBundle())
                 .putExtra(TaskerApi.EXTRA_STRING_BLURB, getString(R.string.tasker_event_blurb, config.topicFilter))
                 .putExtra(TaskerApi.EXTRA_RELEVANT_VARIABLES, resources.getStringArray(R.array.tasker_event_variables))
+        AppLog.i(TAG, "Saved: $config")
         setResult(RESULT_OK, result)
         finish()
+    }
+
+    private companion object {
+        const val TAG = "TaskerEventEdit"
     }
 }

@@ -93,4 +93,17 @@
     <string name="theme_auto">Automatic (dark 19:00–07:00)</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="diagnostics_title">Diagnostics</string>
+    <string name="log_enable">Save diagnostic log</string>
+    <string name="log_description">Records connection, subscription, service, Tasker and screen activity so a problem can be analysed from the log alone. Passwords are never recorded; topics and the start of payloads are. Check the log before sharing it publicly.</string>
+    <string name="log_location">Log file</string>
+    <string name="log_size">%1$s of at most %2$s</string>
+    <string name="log_steps_title">Reporting a problem</string>
+    <string name="log_steps">1. Turn on the diagnostic log.\n2. Reproduce the problem.\n3. Save or share the log.\n4. Open an issue on GitHub, describe what happened and attach the log.</string>
+    <string name="action_share_log">Share log</string>
+    <string name="action_save_log">Save log…</string>
+    <string name="action_report_issue">Report on GitHub</string>
+    <string name="action_clear_log">Clear log</string>
+    <string name="log_saved">Log saved.</string>
+    <string name="log_save_failed">Could not save the log: %1$s</string>
 </resources>

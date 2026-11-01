@@ -54,6 +54,14 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun diagnosticLoggingFlag() {
+        val repo = SettingsRepository(context)
+        assertFalse(repo.diagnosticLogging)
+        repo.diagnosticLogging = true
+        assertTrue(SettingsRepository(context).diagnosticLogging)
+    }
+
+    @Test
     fun themeModeDefaultsToAutoAndPersists() {
         val repo = SettingsRepository(context)
         assertEquals(ThemeMode.AUTO, repo.themeMode)

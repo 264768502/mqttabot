@@ -82,4 +82,17 @@
     <string name="theme_auto">自動（19:00–07:00 はダーク）</string>
     <string name="theme_light">ライト</string>
     <string name="theme_dark">ダーク</string>
+    <string name="diagnostics_title">診断</string>
+    <string name="log_enable">診断ログを保存</string>
+    <string name="log_description">接続、購読、サービス、Tasker、画面の操作を記録し、ログだけで問題を分析できるようにします。パスワードは記録されません。トピックとメッセージ内容の先頭は記録されます。公開する前にログを確認してください。</string>
+    <string name="log_location">ログファイル</string>
+    <string name="log_size">%1$s（上限 %2$s）</string>
+    <string name="log_steps_title">問題の報告</string>
+    <string name="log_steps">1. 診断ログをオンにします。\n2. 問題を再現します。\n3. ログを保存または共有します。\n4. GitHub で Issue を作成し、状況を説明してログを添付します。</string>
+    <string name="action_share_log">ログを共有</string>
+    <string name="action_save_log">ログを保存…</string>
+    <string name="action_report_issue">GitHub で報告</string>
+    <string name="action_clear_log">ログを消去</string>
+    <string name="log_saved">ログを保存しました。</string>
+    <string name="log_save_failed">ログを保存できませんでした: %1$s</string>
 </resources>

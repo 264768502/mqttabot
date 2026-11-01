@@ -25,6 +25,7 @@ import com.mqttabot.tasker.TaskerApi
 import com.mqttabot.testutil.FakeGateway
 import com.mqttabot.testutil.ManualTaskRunner
 import com.mqttabot.ui.BrokerSettingsActivity
+import com.mqttabot.ui.DiagnosticsActivity
 import com.mqttabot.ui.MainActivity
 import com.mqttabot.ui.TAG_FILTER
 import com.mqttabot.ui.TAG_MAIN_LIST
@@ -37,7 +38,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
+import org.robolectric.shadows.ShadowEnvironment
 import java.io.File
+import java.nio.file.Paths
 import java.util.Calendar
 
 /**
@@ -127,6 +130,19 @@ abstract class ScreenshotTest(
         compose.onNodeWithTag(TAG_FILTER).performTextReplacement("home/+/temperature")
         compose.onNodeWithTag(TAG_PATTERN).performTextReplacement("^\\d+(\\.\\d+)?$")
         s.capture("4_tasker_event")
+    }
+
+    @Test
+    fun diagnostics() {
+        // Robolectric keeps app files outside its shared-storage root; align them as on a device.
+        val appFiles =
+            AppGraph.logFile.dir.path
+                .substringBefore("/Android/data/")
+        ShadowEnvironment.setExternalStorageDirectory(Paths.get(appFiles))
+        AppGraph.setDiagnosticLogging(true)
+        val s = ActivityScenario.launch(DiagnosticsActivity::class.java)
+        s.capture("5_diagnostics")
+        AppGraph.logFile.clear()
     }
 
     protected fun write(

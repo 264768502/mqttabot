@@ -50,6 +50,10 @@ class SettingsRepository(
         get() = prefs.getBoolean(KEY_AUTO_START, false)
         set(value) = prefs.edit { putBoolean(KEY_AUTO_START, value) }
 
+    var diagnosticLogging: Boolean
+        get() = prefs.getBoolean(KEY_DIAGNOSTIC_LOGGING, false)
+        set(value) = prefs.edit { putBoolean(KEY_DIAGNOSTIC_LOGGING, value) }
+
     var themeMode: ThemeMode
         get() = ThemeMode.entries.firstOrNull { it.name == str(KEY_THEME, "") } ?: ThemeMode.AUTO
         set(value) = prefs.edit { putString(KEY_THEME, value.name) }
@@ -99,6 +103,7 @@ class SettingsRepository(
         const val KEY_CLEAN_SESSION = "clean_session"
         const val KEY_AUTO_START = "auto_start_on_boot"
         const val KEY_THEME = "theme_mode"
+        const val KEY_DIAGNOSTIC_LOGGING = "diagnostic_logging"
         const val KEY_SUBSCRIPTIONS = "subscriptions"
         private const val JSON_FILTER = "filter"
         private const val JSON_QOS = "qos"

@@ -36,7 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mqttabot.R
-import com.mqttabot.ui.contentWidth
+import com.mqttabot.ui.ScreenBody
 
 const val TAG_CANCEL = "cancel"
 const val TAG_TASKER_SAVE = "tasker_save"
@@ -56,50 +56,38 @@ fun TaskerEditScaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = { TopAppBar(title = { Text(title) }, scrollBehavior = scrollBehavior) },
     ) { padding ->
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .consumeWindowInsets(padding)
-                    .imePadding()
-                    .verticalScroll(rememberScrollState())
-                    .padding(padding)
-                    .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
-        ) {
-            Column(Modifier.contentWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .clip(MaterialTheme.shapes.large)
-                            .background(MaterialTheme.colorScheme.secondaryContainer)
-                            .padding(16.dp),
+        ScreenBody(padding) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(MaterialTheme.shapes.large)
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                        .padding(16.dp),
+            ) {
+                Icon(
+                    painterResource(R.drawable.ic_info),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+                Spacer(Modifier.width(16.dp))
+                Text(hint, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
+            }
+            fields()
+            Row(
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+            ) {
+                TextButton(onClick = onCancel, modifier = Modifier.testTag(TAG_CANCEL)) { Text(stringResource(R.string.action_cancel)) }
+                Spacer(Modifier.width(8.dp))
+                Button(
+                    onClick = onSave,
+                    modifier = Modifier.heightIn(min = ButtonDefaults.MediumContainerHeight).testTag(TAG_TASKER_SAVE),
+                    contentPadding = ButtonDefaults.MediumContentPadding,
                 ) {
-                    Icon(
-                        painterResource(R.drawable.ic_info),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                    )
-                    Spacer(Modifier.width(16.dp))
-                    Text(hint, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
-                }
-                fields()
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                ) {
-                    TextButton(onClick = onCancel, modifier = Modifier.testTag(TAG_CANCEL)) { Text(stringResource(R.string.action_cancel)) }
-                    Spacer(Modifier.width(8.dp))
-                    Button(
-                        onClick = onSave,
-                        modifier = Modifier.heightIn(min = ButtonDefaults.MediumContainerHeight).testTag(TAG_TASKER_SAVE),
-                        contentPadding = ButtonDefaults.MediumContentPadding,
-                    ) {
-                        Text(stringResource(R.string.action_save))
-                    }
+                    Text(stringResource(R.string.action_save))
                 }
             }
         }

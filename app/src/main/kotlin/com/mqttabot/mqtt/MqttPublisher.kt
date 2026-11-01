@@ -1,5 +1,6 @@
 package com.mqttabot.mqtt
 
+import com.mqttabot.log.AppLog
 import java.util.UUID
 
 /** Publishes via the shared connection when available, otherwise via a short-lived one. */
@@ -18,10 +19,13 @@ class MqttPublisher(
         require(qos in 0..2) { "Invalid QoS: $qos" }
         val bytes = payload.toByteArray(Charsets.UTF_8)
         val shared = sharedGateway()
+        val what = "Publish to $topic (QoS $qos, retained=$retained, ${bytes.size} bytes): ${AppLog.preview(payload)}"
         if (shared != null) {
+            AppLog.i(TAG, "$what via the service connection")
             shared.publish(topic, bytes, qos, retained)
             return
         }
+        AppLog.i(TAG, "$what via a one-shot connection")
         // Distinct client id so we never kick the long-lived connection off the broker.
         val config = configProvider().copy(clientId = oneShotClientId(), cleanSession = true)
         val g = gatewayFactory()
@@ -42,6 +46,8 @@ class MqttPublisher(
     }
 
     companion object {
+        private const val TAG = "Publisher"
+
         fun oneShotClientId(): String = "mqttabot-pub-" + UUID.randomUUID().toString().substring(0, 8)
     }
 }

@@ -371,6 +371,13 @@ class MainActivityTest {
     }
 
     @Test
+    fun opensDiagnostics() {
+        launch()
+        compose.onNodeWithTag(TAG_DIAGNOSTICS).performClick()
+        assertEquals(DiagnosticsActivity::class.java.name, shadowOf(activity()).nextStartedActivity.component!!.className)
+    }
+
+    @Test
     fun choosesTheme() {
         launch()
         compose.onNodeWithTag(TAG_THEME).performClick()

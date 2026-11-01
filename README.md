@@ -42,15 +42,15 @@ Both channels ship the same APK signed with the same key, so you can switch betw
 
 ## Screenshots
 
-| Main screen | Messages | Broker settings | Tasker event |
-| :---: | :---: | :---: | :---: |
-| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1_main.png" width="200" alt="Main screen"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2_messages.png" width="200" alt="Messages"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3_broker_settings.png" width="200" alt="Broker settings"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4_tasker_event.png" width="200" alt="Tasker event configuration"> |
+| Main screen | Messages | Broker settings | Tasker event | Diagnostics |
+| :---: | :---: | :---: | :---: | :---: |
+| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1_main.png" width="160" alt="Main screen"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2_messages.png" width="160" alt="Messages"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3_broker_settings.png" width="160" alt="Broker settings"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4_tasker_event.png" width="160" alt="Tasker event"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5_diagnostics.png" width="160" alt="Diagnostics"> |
 
 Dark theme:
 
-| | | | |
-| :---: | :---: | :---: | :---: |
-| <img src="docs/screenshots/dark/1_main.png" width="200" alt="Main screen (dark)"> | <img src="docs/screenshots/dark/2_messages.png" width="200" alt="Messages (dark)"> | <img src="docs/screenshots/dark/3_broker_settings.png" width="200" alt="Broker settings (dark)"> | <img src="docs/screenshots/dark/4_tasker_event.png" width="200" alt="Tasker event (dark)"> |
+| | | | | |
+| :---: | :---: | :---: | :---: | :---: |
+| <img src="docs/screenshots/dark/1_main.png" width="160" alt="Main screen (dark)"> | <img src="docs/screenshots/dark/2_messages.png" width="160" alt="Messages (dark)"> | <img src="docs/screenshots/dark/3_broker_settings.png" width="160" alt="Broker settings (dark)"> | <img src="docs/screenshots/dark/4_tasker_event.png" width="160" alt="Tasker event (dark)"> | <img src="docs/screenshots/dark/5_diagnostics.png" width="160" alt="Diagnostics (dark)"> |
 
 ## Features
 
@@ -65,6 +65,7 @@ Dark theme:
 | Theme | Automatic (light 07:00–19:00, dark otherwise; switches live), or always light / always dark. Chosen from the top bar. |
 | Background activity | The main screen shows the app's battery usage setting (Unrestricted / Optimized / Restricted) and opens the right system screen to allow unrestricted background activity, so the subscription keeps running with the screen off. |
 | Permissions | Asked for only when needed: notifications (Android 13+) when the service starts. If declined, the app explains why it needs it and links to the system setting. |
+| Diagnostic log | Optional (Diagnostics screen, bug icon). Records connection, subscription, service, Tasker and UI activity plus crashes, so a problem can be analysed from the log alone; never records passwords, and keeps payloads to a short excerpt. Bounded to 2 MB (4 rotating files). Stored in app-specific storage (`Android/data/com.mqttabot/files/logs/`); the screen shows the path and can save the log (system file picker), share it, or open a GitHub issue to attach it to. |
 | Languages | English, Simplified Chinese, Traditional Chinese, Spanish, German, Korean and Japanese. The app follows the system language and falls back to English; on Android 13+ it can also be set per app in system settings. |
 
 ### Using with Tasker

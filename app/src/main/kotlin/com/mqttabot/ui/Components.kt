@@ -4,17 +4,25 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -30,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
@@ -43,6 +52,37 @@ import com.mqttabot.R
 
 /** Full width up to 640dp, so content stays readable on tablets, foldables and in landscape. */
 fun Modifier.contentWidth(): Modifier = widthIn(max = 640.dp).fillMaxWidth()
+
+/**
+ * Scrolling body of a screen with a top app bar. The bar's inset sits outside the scroll viewport,
+ * so nothing scrolled "into view" ends up under the bar; the bottom inset stays inside, so content
+ * scrolls behind the navigation bar.
+ */
+@Composable
+fun ScreenBody(
+    padding: PaddingValues,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val direction = LocalLayoutDirection.current
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(top = padding.calculateTopPadding())
+                .consumeWindowInsets(padding)
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    start = padding.calculateStartPadding(direction) + 16.dp,
+                    end = padding.calculateEndPadding(direction) + 16.dp,
+                    top = 8.dp,
+                    bottom = padding.calculateBottomPadding() + 24.dp,
+                ),
+    ) {
+        Column(Modifier.contentWidth(), verticalArrangement = Arrangement.spacedBy(8.dp), content = content)
+    }
+}
 
 /** Expressive card: tonal container, no outline, extra-large corners. */
 @Composable

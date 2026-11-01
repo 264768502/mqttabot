@@ -53,6 +53,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.mqttabot.AppGraph
 import com.mqttabot.R
+import com.mqttabot.log.AppLog
+import com.mqttabot.log.Diagnostics
 import com.mqttabot.mqtt.BrokerConfig
 import com.mqttabot.mqtt.BrokerPresets
 import com.mqttabot.mqtt.ConfigError
@@ -75,10 +77,13 @@ const val TAG_CLEAN_SESSION = "clean_session"
 const val TAG_AUTO_START = "auto_start"
 const val TAG_SAVE = "save"
 
+private const val TAG = "BrokerSettings"
+
 /** Broker endpoint, credentials and connection options. */
 class BrokerSettingsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppLog.i(TAG, "Opened")
         setThemedContent { BrokerSettingsScreen(onDone = ::finish) }
     }
 }
@@ -106,6 +111,7 @@ fun BrokerSettingsScreen(onDone: () -> Unit) {
         preset = position
         if (position == 0) return
         val p = BrokerPresets.all[position - 1]
+        AppLog.i(TAG, "Preset chosen: ${p.name}")
         host = p.host
         port = p.port.toString()
         tls = p.tls
@@ -129,7 +135,11 @@ fun BrokerSettingsScreen(onDone: () -> Unit) {
                 cleanSession = cleanSession,
             )
         error = config.validate()
-        if (error != null) return
+        if (error != null) {
+            AppLog.i(TAG, "Not saved: invalid $error")
+            return
+        }
+        AppLog.i(TAG, "Saved: ${Diagnostics.describe(config)}, start on boot: $autoStart")
         AppGraph.settings.saveBroker(config)
         AppGraph.settings.autoStartOnBoot = autoStart
         AppGraph.controller?.reconnect()
@@ -157,97 +167,85 @@ fun BrokerSettingsScreen(onDone: () -> Unit) {
             )
         },
     ) { padding ->
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .consumeWindowInsets(padding)
-                    .imePadding()
-                    .verticalScroll(rememberScrollState())
-                    .padding(padding)
-                    .padding(start = 16.dp, end = 16.dp, bottom = 24.dp),
-        ) {
-            Column(Modifier.contentWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                SectionTitle(stringResource(R.string.section_server))
-                PresetMenu(preset, ::applyPreset)
-                Row {
-                    FormField(
-                        host,
-                        { host = it },
-                        stringResource(R.string.hint_host),
-                        TAG_HOST,
-                        modifier = Modifier.weight(1f),
-                        error = errorFor(ConfigError.HOST, R.string.error_host),
-                        keyboardType = KeyboardType.Uri,
-                    )
-                    FormField(
-                        port,
-                        { port = it },
-                        stringResource(R.string.hint_port),
-                        TAG_PORT,
-                        modifier = Modifier.padding(start = 8.dp).width(112.dp),
-                        error = errorFor(ConfigError.PORT, R.string.error_port),
-                        keyboardType = KeyboardType.Number,
-                    )
-                }
-                SwitchRow(stringResource(R.string.label_tls), tls, { tls = it }, TAG_TLS)
-
-                SectionTitle(stringResource(R.string.section_auth))
+        ScreenBody(padding) {
+            SectionTitle(stringResource(R.string.section_server))
+            PresetMenu(preset, ::applyPreset)
+            Row {
                 FormField(
-                    username,
-                    { username = it },
-                    stringResource(R.string.hint_username),
-                    TAG_USERNAME,
-                    error = errorFor(ConfigError.USERNAME, R.string.error_username),
+                    host,
+                    { host = it },
+                    stringResource(R.string.hint_host),
+                    TAG_HOST,
+                    modifier = Modifier.weight(1f),
+                    error = errorFor(ConfigError.HOST, R.string.error_host),
+                    keyboardType = KeyboardType.Uri,
                 )
                 FormField(
-                    password,
-                    { password = it },
-                    stringResource(R.string.hint_password),
-                    TAG_PASSWORD,
-                    keyboardType = KeyboardType.Password,
-                    leadingIcon = { Icon(painterResource(R.drawable.ic_key), contentDescription = null) },
-                    trailingIcon = {
-                        IconButton(onClick = { showPassword = !showPassword }, modifier = Modifier.testTag(TAG_PASSWORD_TOGGLE)) {
-                            Icon(
-                                painterResource(if (showPassword) R.drawable.ic_visibility_off else R.drawable.ic_visibility),
-                                contentDescription =
-                                    stringResource(
-                                        if (showPassword) R.string.action_hide_password else R.string.action_show_password,
-                                    ),
-                            )
-                        }
-                    },
-                    visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                )
-
-                SectionTitle(stringResource(R.string.section_session))
-                FormField(clientId, { clientId = it }, stringResource(R.string.hint_client_id), TAG_CLIENT_ID)
-                FormField(
-                    keepAlive,
-                    { keepAlive = it },
-                    stringResource(R.string.hint_keep_alive),
-                    TAG_KEEP_ALIVE,
-                    error = errorFor(ConfigError.KEEP_ALIVE, R.string.error_keep_alive),
+                    port,
+                    { port = it },
+                    stringResource(R.string.hint_port),
+                    TAG_PORT,
+                    modifier = Modifier.padding(start = 8.dp).width(112.dp),
+                    error = errorFor(ConfigError.PORT, R.string.error_port),
                     keyboardType = KeyboardType.Number,
                 )
-                SwitchRow(stringResource(R.string.label_clean_session), cleanSession, { cleanSession = it }, TAG_CLEAN_SESSION)
-                SwitchRow(stringResource(R.string.label_auto_start), autoStart, { autoStart = it }, TAG_AUTO_START)
+            }
+            SwitchRow(stringResource(R.string.label_tls), tls, { tls = it }, TAG_TLS)
 
-                Button(
-                    onClick = ::save,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                top = 16.dp,
-                            ).heightIn(min = ButtonDefaults.MediumContainerHeight)
-                            .testTag(TAG_SAVE),
-                    contentPadding = ButtonDefaults.MediumContentPadding,
-                ) {
-                    Text(stringResource(R.string.action_save))
-                }
+            SectionTitle(stringResource(R.string.section_auth))
+            FormField(
+                username,
+                { username = it },
+                stringResource(R.string.hint_username),
+                TAG_USERNAME,
+                error = errorFor(ConfigError.USERNAME, R.string.error_username),
+            )
+            FormField(
+                password,
+                { password = it },
+                stringResource(R.string.hint_password),
+                TAG_PASSWORD,
+                keyboardType = KeyboardType.Password,
+                leadingIcon = { Icon(painterResource(R.drawable.ic_key), contentDescription = null) },
+                trailingIcon = {
+                    IconButton(onClick = { showPassword = !showPassword }, modifier = Modifier.testTag(TAG_PASSWORD_TOGGLE)) {
+                        Icon(
+                            painterResource(if (showPassword) R.drawable.ic_visibility_off else R.drawable.ic_visibility),
+                            contentDescription =
+                                stringResource(
+                                    if (showPassword) R.string.action_hide_password else R.string.action_show_password,
+                                ),
+                        )
+                    }
+                },
+                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+            )
+
+            SectionTitle(stringResource(R.string.section_session))
+            FormField(clientId, { clientId = it }, stringResource(R.string.hint_client_id), TAG_CLIENT_ID)
+            FormField(
+                keepAlive,
+                { keepAlive = it },
+                stringResource(R.string.hint_keep_alive),
+                TAG_KEEP_ALIVE,
+                error = errorFor(ConfigError.KEEP_ALIVE, R.string.error_keep_alive),
+                keyboardType = KeyboardType.Number,
+            )
+            SwitchRow(stringResource(R.string.label_clean_session), cleanSession, { cleanSession = it }, TAG_CLEAN_SESSION)
+            SwitchRow(stringResource(R.string.label_auto_start), autoStart, { autoStart = it }, TAG_AUTO_START)
+
+            Button(
+                onClick = ::save,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            top = 16.dp,
+                        ).heightIn(min = ButtonDefaults.MediumContainerHeight)
+                        .testTag(TAG_SAVE),
+                contentPadding = ButtonDefaults.MediumContentPadding,
+            ) {
+                Text(stringResource(R.string.action_save))
             }
         }
     }

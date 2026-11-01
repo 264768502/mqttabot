@@ -1,13 +1,17 @@
 package com.mqttabot.mqtt
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mqttabot.testutil.FakeGateway
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.runner.RunWith
 import java.io.IOException
 
+// Robolectric: the code under test logs through android.util.Log.
+@RunWith(AndroidJUnit4::class)
 class MqttPublisherTest {
     private val config = BrokerConfig(host = "h", clientId = "main", cleanSession = false)
 

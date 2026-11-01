@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mqttabot.R
+import com.mqttabot.log.AppLog
 import com.mqttabot.mqtt.Topics
 import com.mqttabot.ui.FormField
 import com.mqttabot.ui.QosSelector
@@ -28,6 +29,7 @@ class PublishActionActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val initial = PublishActionConfig.fromBundle(intent.getBundleExtra(TaskerApi.EXTRA_BUNDLE))
+        AppLog.i(TAG, "Opened: ${initial ?: "new"}")
         setThemedContent {
             var topic by rememberSaveable { mutableStateOf(initial?.topic.orEmpty()) }
             var payload by rememberSaveable { mutableStateOf(initial?.payload.orEmpty()) }
@@ -60,6 +62,7 @@ class PublishActionActivity : ComponentActivity() {
     }
 
     private fun cancel() {
+        AppLog.i(TAG, "Cancelled")
         setResult(RESULT_CANCELED)
         finish()
     }
@@ -69,7 +72,12 @@ class PublishActionActivity : ComponentActivity() {
             Intent()
                 .putExtra(TaskerApi.EXTRA_BUNDLE, config.toBundle())
                 .putExtra(TaskerApi.EXTRA_STRING_BLURB, getString(R.string.tasker_publish_blurb, config.topic, config.qos))
+        AppLog.i(TAG, "Saved: $config")
         setResult(RESULT_OK, result)
         finish()
+    }
+
+    private companion object {
+        const val TAG = "TaskerPublishEdit"
     }
 }

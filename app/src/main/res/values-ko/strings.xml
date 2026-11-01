@@ -82,4 +82,17 @@
     <string name="theme_auto">자동 (19:00–07:00 어둡게)</string>
     <string name="theme_light">밝게</string>
     <string name="theme_dark">어둡게</string>
+    <string name="diagnostics_title">진단</string>
+    <string name="log_enable">진단 로그 저장</string>
+    <string name="log_description">연결, 구독, 서비스, Tasker 및 화면 활동을 기록하여 로그만으로 문제를 분석할 수 있습니다. 비밀번호는 절대 기록되지 않으며, 토픽과 메시지 내용의 앞부분은 기록됩니다. 공개적으로 공유하기 전에 로그를 확인하세요.</string>
+    <string name="log_location">로그 파일</string>
+    <string name="log_size">%1$s / 최대 %2$s</string>
+    <string name="log_steps_title">문제 신고</string>
+    <string name="log_steps">1. 진단 로그를 켭니다.\n2. 문제를 재현합니다.\n3. 로그를 저장하거나 공유합니다.\n4. GitHub에서 이슈를 열고 상황을 설명한 뒤 로그를 첨부합니다.</string>
+    <string name="action_share_log">로그 공유</string>
+    <string name="action_save_log">로그 저장…</string>
+    <string name="action_report_issue">GitHub에 신고</string>
+    <string name="action_clear_log">로그 지우기</string>
+    <string name="log_saved">로그를 저장했습니다.</string>
+    <string name="log_save_failed">로그를 저장할 수 없습니다: %1$s</string>
 </resources>
