@@ -1,0 +1,61 @@
+name: F-Droid repo
+
+# Publishes the self-hosted F-Droid repository (https://<owner>.github.io/<repo>/repo)
+# to GitHub Pages after every successful release, or on demand.
+on:
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  group: fdroid-repo
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build repository
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: pip install fdroidserver==2.4.5
+
+      - name: Build repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FDROID_KEYSTORE_BASE64: ${{ secrets.FDROID_KEYSTORE_BASE64 }}
+          FDROID_KEYSTORE_PASSWORD: ${{ secrets.FDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$FDROID_KEYSTORE_BASE64" ] || [ -z "$FDROID_KEYSTORE_PASSWORD" ]; then
+            echo "::error::FDROID_KEYSTORE_BASE64 / FDROID_KEYSTORE_PASSWORD secrets are not set"
+            exit 1
+          fi
+          export FDROID_KEYSTORE="$RUNNER_TEMP/fdroid-repo.p12"
+          echo "$FDROID_KEYSTORE_BASE64" | base64 --decode > "$FDROID_KEYSTORE"
+          PATH="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1):$PATH"
+          fdroid/repo/build-repo.sh "$RUNNER_TEMP/fdroid-work" "$RUNNER_TEMP/site"
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: ${{ runner.temp }}/site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}repo
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

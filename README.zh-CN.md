@@ -6,6 +6,7 @@
 
 [![CI](https://img.shields.io/github/actions/workflow/status/264768502/mqttabot/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/264768502/mqttabot/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/264768502/mqttabot?include_prereleases&sort=semver&style=for-the-badge&color=1E88E5&logo=github&logoColor=white)](https://github.com/264768502/mqttabot/releases)
+[![F-Droid repo](https://img.shields.io/badge/F--Droid-our%20repo-1976D2?style=for-the-badge&logo=f-droid&logoColor=white)](https://264768502.github.io/mqttabot/)
 [![Coverage](https://img.shields.io/badge/coverage-100%25-43A047?style=for-the-badge&logo=codecov&logoColor=white)](#构建与测试)
 [![License: MIT](https://img.shields.io/badge/License-MIT-FFA000?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
 [![Min API](https://img.shields.io/badge/API-24%2B-43A047?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/about/versions/nougat)
@@ -23,6 +24,16 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 - 最低支持 Android 7.0（API 24），目标版本 Android 16（API 36），编译 SDK 37
 - MQTT 库：Eclipse Paho `mqttv3`（纯 Java）
 - 构建：Gradle 9.8 + AGP 9.5（内置 Kotlin）
+
+## 安装
+
+- **F-Droid（推荐）：** 我们维护了自己的 F-Droid 存储库，F-Droid 应用可以直接安装 MqttABot 并自动更新。
+  - 在手机上打开 **[https://264768502.github.io/mqttabot/](https://264768502.github.io/mqttabot/)**，点 **Add to F-Droid**；或者
+  - 在 F-Droid 中打开 **设置 → 存储库 → +**，填入 `https://264768502.github.io/mqttabot/repo`。
+  - 核对指纹为 `7BDA3AF80BBE18911290B0443571D2D32FF17CFB22B6D607C25E5920A41BDF5F`。
+- **GitHub Releases：** 从 [Releases](https://github.com/264768502/mqttabot/releases) 下载 `mqttabot-<版本>-release.apk` 并安装。
+
+两个渠道发布的是同一个 APK、同一个签名，可以随意切换而无需卸载。
 
 ## 截图
 
@@ -107,19 +118,29 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 | `SIGNING_KEY_ALIAS` | 密钥别名 |
 | `SIGNING_KEY_PASSWORD` | 密钥密码（PKCS12 keystore 与 keystore 密码相同） |
 
+每次发布成功后，[F-Droid 存储库](#f-droid-存储库)也会自动更新。
+
 未配置时，正式版本会被拒绝发布。预发布版本使用 CI 机器临时生成的 debug 密钥签名，release 说明中会注明；这样的 APK 可以安装，但每次签名都不同，用户在它们之间升级前需要先卸载。
 
-## F-Droid
+## F-Droid 存储库
 
-MqttABot 已提交到官方 [F-Droid](https://f-droid.org) 仓库：[fdroiddata!55280](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/55280)。F-Droid 会根据 tag 对应的源码自行构建。构建是**可复现的**：F-Droid 会检查它的构建结果与已签名的 GitHub release 逐字节一致，然后发布带有我们签名的 APK，因此用户可以在 F-Droid 和 GitHub release 之间切换而无需卸载。
+位于 `https://264768502.github.io/mqttabot/repo` 的 F-Droid 存储库由 [`.github/workflows/fdroid-repo.yml`](.github/workflows/fdroid-repo.yml) 在每次发布成功后自动构建并发布（也可在 Actions → F-Droid repo → Run workflow 手动运行）：
 
-- **商店信息：** `fastlane/metadata/android/<语言>/`（en-US、zh-CN、zh-TW、es-ES、de-DE、ko-KR、ja-JP）—— 标题、简短描述、完整描述和更新说明；en-US 和 zh-CN 还包含图标和截图。F-Droid 会直接从仓库读取。
-- **构建元数据：** [`fdroid/com.mqttabot.yml`](fdroid/com.mqttabot.yml)，与提交的文件完全一致。它在发布对应的 commit 上构建 `app`，与 `Binaries`（GitHub release 的 APK）比对并要求其签名属于 `AllowedAPKSigningKeys`，同时使用 `AutoUpdateMode: Version` 和 `UpdateCheckMode: Tags`，收录后每个新的 `vX.Y.Z` tag 都会被自动识别。
-- **已用 fdroidserver 验证：** `fdroid lint` 通过，从 GitHub tag 执行的 `fdroid build` 成功，并报告 "compared built binary to supplied reference binary successfully"。
+1. [`fdroid/repo/build-repo.sh`](fdroid/repo/build-repo.sh) 下载所有正式（非预发布）GitHub release 中已签名的 `*-release.apk`。
+2. `fdroid update`（fdroidserver）根据 [`fdroid/repo/metadata/com.mqttabot.yml`](fdroid/repo/metadata/com.mqttabot.yml) 以及 `fastlane/metadata/android/` 中的商店文字、图标和截图生成索引，并用存储库密钥签名。
+3. 只有生成的站点（`repo/` 和由 [`fdroid/repo/index.html`](fdroid/repo/index.html) 生成的说明页）会部署到 GitHub Pages，密钥和配置文件绝不会被发布。
 
-merge request 被接受后，新版本只需按正常流程发布（见[版本发布](#版本发布)）；F-Droid 会识别新的 tag 并在几天内发布。可复现性依赖于相同的构建工具链，因此升级 Gradle、AGP 或 JDK 时，要保持发布 workflow（JDK 21）与 F-Droid 构建一致。
+存储库密钥与 APK 签名密钥相互独立，保存在 `FDROID_KEYSTORE_BASE64` 和 `FDROID_KEYSTORE_PASSWORD` 两个 secret 中（PKCS12，别名 `mqttabot-repo`），SHA-256 指纹为 `7BDA3AF80BBE18911290B0443571D2D32FF17CFB22B6D607C25E5920A41BDF5F`。请备份好它：一旦更换，所有用户都需要删除并重新添加存储库。
 
-源码中不能引入非自由依赖，也不能使用 Google、Maven Central 和 Gradle 插件门户以外的 Maven 仓库，否则 F-Droid 的扫描器会拒绝构建。
+本地测试：`FDROID_KEYSTORE=… FDROID_KEYSTORE_PASSWORD=… GH_TOKEN=… fdroid/repo/build-repo.sh /tmp/fdroid-work /tmp/fdroid-site`。
+
+### 官方 F-Droid（已暂停）
+
+我们曾向官方 F-Droid 仓库提交（[fdroiddata!55280](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/55280)），但因 F-Droid 只收录维护超过 3 个月的应用而被关闭。计划在 2027 年 2 月之后重新提交。所需内容均已准备好：[`fdroid/com.mqttabot.yml`](fdroid/com.mqttabot.yml) 为 fdroiddata 格式，构建可复现（已用 `fdroid build` 验证 F-Droid 的构建与已签名的 GitHub release 一致），除政策审核外 F-Droid 的 CI 检查均已通过。重新提交时，把该文件更新到最新 tag（完整 commit hash、版本号），并保持：
+
+- 不使用 Google、Maven Central 和 Gradle 插件门户以外的 Maven 仓库，不引入非自由依赖（F-Droid 的扫描器会拒绝）；
+- `app/build.gradle.kts` 中保留 `dependenciesInfo { includeInApk = false }`（F-Droid 会拒绝加密的依赖信息块）；
+- `versionCode` / `versionName` 保持字面值（F-Droid 会读取），发布 workflow 与 F-Droid 构建使用相同的工具链（JDK 21），以保证构建可复现。
 
 ## 说明
 

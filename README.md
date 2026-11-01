@@ -6,6 +6,7 @@
 
 [![CI](https://img.shields.io/github/actions/workflow/status/264768502/mqttabot/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/264768502/mqttabot/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/264768502/mqttabot?include_prereleases&sort=semver&style=for-the-badge&color=1E88E5&logo=github&logoColor=white)](https://github.com/264768502/mqttabot/releases)
+[![F-Droid repo](https://img.shields.io/badge/F--Droid-our%20repo-1976D2?style=for-the-badge&logo=f-droid&logoColor=white)](https://264768502.github.io/mqttabot/)
 [![Coverage](https://img.shields.io/badge/coverage-100%25-43A047?style=for-the-badge&logo=codecov&logoColor=white)](#build-and-test)
 [![License: MIT](https://img.shields.io/badge/License-MIT-FFA000?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
 [![Min API](https://img.shields.io/badge/API-24%2B-43A047?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/about/versions/nougat)
@@ -23,6 +24,16 @@ Android MQTT client + persistent subscription service + Tasker plugin. Written e
 - Minimum Android 7.0 (API 24), target Android 16 (API 36), compiled against SDK 37
 - MQTT library: Eclipse Paho `mqttv3` (pure Java)
 - Build: Gradle 9.8 + AGP 9.5 (built-in Kotlin)
+
+## Install
+
+- **F-Droid (recommended):** we publish our own F-Droid repository, so the F-Droid app installs MqttABot and keeps it updated.
+  - On your phone, open **[https://264768502.github.io/mqttabot/](https://264768502.github.io/mqttabot/)** and tap **Add to F-Droid**, or
+  - in F-Droid open **Settings → Repositories → +** and enter `https://264768502.github.io/mqttabot/repo`.
+  - Check that the fingerprint is `7BDA3AF80BBE18911290B0443571D2D32FF17CFB22B6D607C25E5920A41BDF5F`.
+- **GitHub Releases:** download `mqttabot-<version>-release.apk` from [Releases](https://github.com/264768502/mqttabot/releases) and install it.
+
+Both channels ship the same APK signed with the same key, so you can switch between them without uninstalling.
 
 ## Screenshots
 
@@ -107,19 +118,29 @@ The version lives in the source (F-Droid reads it from there): `versionName` is 
 | `SIGNING_KEY_ALIAS` | Key alias |
 | `SIGNING_KEY_PASSWORD` | Key password (same as the keystore password for PKCS12 keystores) |
 
+Every successful release also updates the [F-Droid repository](#f-droid-repository) automatically.
+
 Without them, final releases are refused. Pre-releases are signed with the runner's throwaway debug key, and the release notes say so; such APKs install, but each one has a different signature, so users can't upgrade between them without uninstalling.
 
-## F-Droid
+## F-Droid repository
 
-MqttABot has been submitted to the official [F-Droid](https://f-droid.org) repository: [fdroiddata!55280](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/55280). F-Droid builds the app itself from the tagged source. Builds are **reproducible**: F-Droid checks that its build matches the signed GitHub release byte for byte and then ships that APK with our signature, so users can switch between F-Droid and GitHub releases without uninstalling.
+The F-Droid repository at `https://264768502.github.io/mqttabot/repo` is built and published by [`.github/workflows/fdroid-repo.yml`](.github/workflows/fdroid-repo.yml) after every successful Release (or manually via Actions → F-Droid repo → Run workflow):
 
-- **Store listing:** `fastlane/metadata/android/<locale>/` (en-US, zh-CN, zh-TW, es-ES, de-DE, ko-KR, ja-JP) — title, short and full description and changelogs; en-US and zh-CN also have the icon and screenshots. F-Droid picks these up from the repository.
-- **Build metadata:** [`fdroid/com.mqttabot.yml`](fdroid/com.mqttabot.yml), identical to the submitted file. It builds `app` at the release commit, verifies it against `Binaries` (the GitHub release APK) signed by `AllowedAPKSigningKeys`, and uses `AutoUpdateMode: Version` with `UpdateCheckMode: Tags`, so every new `vX.Y.Z` tag is picked up automatically after inclusion.
-- **Checked with fdroidserver:** `fdroid lint` passes, and `fdroid build` succeeds from the GitHub tag and reports "compared built binary to supplied reference binary successfully".
+1. [`fdroid/repo/build-repo.sh`](fdroid/repo/build-repo.sh) downloads the signed `*-release.apk` of every published (non-pre-release) GitHub release.
+2. `fdroid update` (fdroidserver) builds the index from [`fdroid/repo/metadata/com.mqttabot.yml`](fdroid/repo/metadata/com.mqttabot.yml) plus the store texts, icon and screenshots in `fastlane/metadata/android/`, and signs it with the repository key.
+3. Only the generated site (`repo/` + a landing page from [`fdroid/repo/index.html`](fdroid/repo/index.html)) is deployed to GitHub Pages; the key and config never are.
 
-After the merge request is accepted, new versions only need a normal release (see [Releasing](#releasing)); F-Droid picks up the tag and publishes within a few days. Reproducibility depends on building with the same toolchain, so keep the release workflow (JDK 21) and the F-Droid build in sync when upgrading Gradle, AGP or the JDK.
+The repository key is separate from the APK signing key. It is stored in the `FDROID_KEYSTORE_BASE64` and `FDROID_KEYSTORE_PASSWORD` secrets (PKCS12, alias `mqttabot-repo`); its SHA-256 fingerprint is `7BDA3AF80BBE18911290B0443571D2D32FF17CFB22B6D607C25E5920A41BDF5F`. Back it up: if it changes, every user has to remove and re-add the repository.
 
-Keep the source free of non-free dependencies and of Maven repositories other than Google, Maven Central and the Gradle plugin portal; F-Droid's scanner rejects builds that use others.
+To test locally: `FDROID_KEYSTORE=… FDROID_KEYSTORE_PASSWORD=… GH_TOKEN=… fdroid/repo/build-repo.sh /tmp/fdroid-work /tmp/fdroid-site`.
+
+### Official F-Droid (paused)
+
+We submitted to the official F-Droid repository ([fdroiddata!55280](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/55280)); it was closed because F-Droid only includes apps that have been maintained for more than 3 months. We plan to resubmit after February 2027. Everything is prepared: [`fdroid/com.mqttabot.yml`](fdroid/com.mqttabot.yml) is in fdroiddata format, builds are reproducible (F-Droid's build matches the signed GitHub release, verified with `fdroid build`), and F-Droid's CI checks passed except the policy review. When resubmitting, update the file to the latest tag (full commit hash, versions) and keep:
+
+- no Maven repositories other than Google, Maven Central and the Gradle plugin portal, and no non-free dependencies (F-Droid's scanner rejects them);
+- `dependenciesInfo { includeInApk = false }` in `app/build.gradle.kts` (F-Droid rejects the encrypted dependency block);
+- literal `versionCode` / `versionName` (F-Droid reads them), and the same toolchain (JDK 21) in the release workflow and F-Droid's build, so builds stay reproducible.
 
 ## Notes
 
