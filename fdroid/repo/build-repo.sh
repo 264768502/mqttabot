@@ -57,6 +57,7 @@ chmod 600 "$work/config.yml"
 fingerprint=$(keytool -list -v -keystore "$FDROID_KEYSTORE" -storepass "$FDROID_KEYSTORE_PASSWORD" -alias mqttabot-repo |
     sed -nE 's/^\s*SHA256: ([0-9A-F:]+)$/\1/p' | tr -d ':')
 cp -r "$work/repo" "$site/repo"
+cp "$src/fdroid/repo/qr.png" "$site/qr.png"
 sed -e "s|@REPO_URL@|$repo_url|g" -e "s|@FINGERPRINT@|$fingerprint|g" \
     -e "s|@ADD_URL@|fdroidrepos://${repo_url#https://}?fingerprint=$fingerprint|g" \
     "$src/fdroid/repo/index.html" > "$site/index.html"

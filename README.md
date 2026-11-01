@@ -28,6 +28,10 @@ Android MQTT client + persistent subscription service + Tasker plugin. Written e
 ## Install
 
 - **F-Droid (recommended):** we publish our own F-Droid repository, so the F-Droid app installs MqttABot and keeps it updated.
+  - **Scan:** in F-Droid open **Settings → Repositories → +** and scan this QR code (it includes the fingerprint):
+
+    <img src="fdroid/repo/qr.png" width="200" height="200" alt="QR code for the MqttABot F-Droid repository">
+
   - On your phone, open **[https://264768502.github.io/mqttabot/](https://264768502.github.io/mqttabot/)** and tap **Add to F-Droid**, or
   - in F-Droid open **Settings → Repositories → +** and enter `https://264768502.github.io/mqttabot/repo`.
   - Check that the fingerprint is `7BDA3AF80BBE18911290B0443571D2D32FF17CFB22B6D607C25E5920A41BDF5F`.
@@ -131,6 +135,8 @@ The F-Droid repository at `https://264768502.github.io/mqttabot/repo` is built a
 3. Only the generated site (`repo/` + a landing page from [`fdroid/repo/index.html`](fdroid/repo/index.html)) is deployed to GitHub Pages; the key and config never are.
 
 The repository key is separate from the APK signing key. It is stored in the `FDROID_KEYSTORE_BASE64` and `FDROID_KEYSTORE_PASSWORD` secrets (PKCS12, alias `mqttabot-repo`); its SHA-256 fingerprint is `7BDA3AF80BBE18911290B0443571D2D32FF17CFB22B6D607C25E5920A41BDF5F`. Back it up: if it changes, every user has to remove and re-add the repository.
+
+[`fdroid/repo/qr.png`](fdroid/repo/qr.png) encodes `https://264768502.github.io/mqttabot/repo?fingerprint=7BDA3AF80BBE18911290B0443571D2D32FF17CFB22B6D607C25E5920A41BDF5F`. If the address or key changes, regenerate it with `pip install segno` and `segno --scale 8 --border 4 -o fdroid/repo/qr.png "<repo-url>?fingerprint=<fingerprint>"`.
 
 To test locally: `FDROID_KEYSTORE=… FDROID_KEYSTORE_PASSWORD=… GH_TOKEN=… fdroid/repo/build-repo.sh /tmp/fdroid-work /tmp/fdroid-site`.
 

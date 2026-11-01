@@ -28,6 +28,10 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 ## 安装
 
 - **F-Droid（推荐）：** 我们维护了自己的 F-Droid 存储库，F-Droid 应用可以直接安装 MqttABot 并自动更新。
+  - **扫码：** 在 F-Droid 中打开 **设置 → 存储库 → +**，扫描下面的二维码（已包含指纹）：
+
+    <img src="fdroid/repo/qr.png" width="200" height="200" alt="MqttABot F-Droid 存储库二维码">
+
   - 在手机上打开 **[https://264768502.github.io/mqttabot/](https://264768502.github.io/mqttabot/)**，点 **Add to F-Droid**；或者
   - 在 F-Droid 中打开 **设置 → 存储库 → +**，填入 `https://264768502.github.io/mqttabot/repo`。
   - 核对指纹为 `7BDA3AF80BBE18911290B0443571D2D32FF17CFB22B6D607C25E5920A41BDF5F`。
@@ -131,6 +135,8 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 3. 只有生成的站点（`repo/` 和由 [`fdroid/repo/index.html`](fdroid/repo/index.html) 生成的说明页）会部署到 GitHub Pages，密钥和配置文件绝不会被发布。
 
 存储库密钥与 APK 签名密钥相互独立，保存在 `FDROID_KEYSTORE_BASE64` 和 `FDROID_KEYSTORE_PASSWORD` 两个 secret 中（PKCS12，别名 `mqttabot-repo`），SHA-256 指纹为 `7BDA3AF80BBE18911290B0443571D2D32FF17CFB22B6D607C25E5920A41BDF5F`。请备份好它：一旦更换，所有用户都需要删除并重新添加存储库。
+
+[`fdroid/repo/qr.png`](fdroid/repo/qr.png) 编码的内容是 `https://264768502.github.io/mqttabot/repo?fingerprint=7BDA3AF80BBE18911290B0443571D2D32FF17CFB22B6D607C25E5920A41BDF5F`。地址或密钥变化时，用 `pip install segno` 和 `segno --scale 8 --border 4 -o fdroid/repo/qr.png "<存储库地址>?fingerprint=<指纹>"` 重新生成。
 
 本地测试：`FDROID_KEYSTORE=… FDROID_KEYSTORE_PASSWORD=… GH_TOKEN=… fdroid/repo/build-repo.sh /tmp/fdroid-work /tmp/fdroid-site`。
 
