@@ -6,5 +6,6 @@ Features:
 * Built-in public brokers (Eclipse Mosquitto, HiveMQ, EMQX, Eclipse IoT; plain TCP and TLS) or your own broker, with username, password, client ID, keep-alive and clean-session settings.
 * Tasker action "MqttABot: Publish" sends MQTT messages from Tasker tasks. Topic and payload accept Tasker variables.
 * Tasker event "MqttABot: Message received" triggers profiles when a subscribed message arrives. It supports topic wildcards (+ and #) and an optional payload regex, and sets %mqtt_topic, %mqtt_payload, %mqtt_qos, %mqtt_retained and %mqtt_received_at.
+* UI in English, Simplified Chinese, Traditional Chinese, Spanish, German, Korean and Japanese.
 
 Works on Android 7.0 and newer. Open source under the MIT license, with no ads and no tracking.

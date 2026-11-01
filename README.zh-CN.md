@@ -1,14 +1,20 @@
+<div align="center">
+
+<img src="art/icon.svg" width="128" height="128" alt="MqttABot icon">
+
 # MqttABot
 
-[![CI](https://github.com/264768502/mqttabot/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/264768502/mqttabot/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/264768502/mqttabot?include_prereleases&sort=semver)](https://github.com/264768502/mqttabot/releases)
-[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](#构建与测试)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Min API](https://img.shields.io/badge/API-24%2B-brightgreen.svg?logo=android&logoColor=white)](https://developer.android.com/about/versions/nougat)
-[![Target SDK](https://img.shields.io/badge/targetSdk-36%20%28Android%2016%29-blue.svg?logo=android&logoColor=white)](https://developer.android.com/about/versions/16)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-7F52FF.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org)
-[![Tasker plugin](https://img.shields.io/badge/Tasker-plugin-orange.svg)](https://tasker.joaoapps.com/)
-[![Last commit](https://img.shields.io/github/last-commit/264768502/mqttabot)](https://github.com/264768502/mqttabot/commits/main)
+[![CI](https://img.shields.io/github/actions/workflow/status/264768502/mqttabot/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/264768502/mqttabot/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/264768502/mqttabot?include_prereleases&sort=semver&style=for-the-badge&color=1E88E5&logo=github&logoColor=white)](https://github.com/264768502/mqttabot/releases)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-43A047?style=for-the-badge&logo=codecov&logoColor=white)](#构建与测试)
+[![License: MIT](https://img.shields.io/badge/License-MIT-FFA000?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
+[![Min API](https://img.shields.io/badge/API-24%2B-43A047?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/about/versions/nougat)
+[![Target SDK](https://img.shields.io/badge/targetSdk-36%20%28Android%2016%29-00897B?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/about/versions/16)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-7E57C2?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Tasker plugin](https://img.shields.io/badge/Tasker-plugin-EF6C00?style=for-the-badge&logo=android&logoColor=white)](https://tasker.joaoapps.com/)
+[![Last commit](https://img.shields.io/github/last-commit/264768502/mqttabot?style=for-the-badge&color=6A1B9A&logo=git&logoColor=white)](https://github.com/264768502/mqttabot/commits/main)
+
+</div>
 
 [English](README.md) | **简体中文**
 
@@ -104,18 +110,13 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 
 ## F-Droid
 
-MqttABot 已为官方 [F-Droid](https://f-droid.org) 仓库做好准备。F-Droid 会根据 tag 对应的源码自行构建并用 F-Droid 的密钥签名，因此 F-Droid 的 APK 与 GitHub release 的 APK 不能互相覆盖升级。
+MqttABot 已提交到官方 [F-Droid](https://f-droid.org) 仓库：[fdroiddata!55280](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/55280)。F-Droid 会根据 tag 对应的源码自行构建。构建是**可复现的**：F-Droid 会检查它的构建结果与已签名的 GitHub release 逐字节一致，然后发布带有我们签名的 APK，因此用户可以在 F-Droid 和 GitHub release 之间切换而无需卸载。
 
-- **商店信息：** `fastlane/metadata/android/{en-US,zh-CN}/` —— 标题、简短描述和完整描述、图标、截图和更新说明。F-Droid 会直接从仓库读取。
-- **构建元数据：** [`fdroid/com.mqttabot.yml`](fdroid/com.mqttabot.yml)。它从 tag `v<版本>` 构建 `app`，并使用 `AutoUpdateMode: Version` 和 `UpdateCheckMode: Tags`，收录后每个新的 `vX.Y.Z` tag 都会被自动识别。
-- **已用 fdroidserver 验证：** `fdroid lint` 通过，本地 `fdroid build`（源码扫描 + 从 tag 构建）成功。
+- **商店信息：** `fastlane/metadata/android/<语言>/`（en-US、zh-CN、zh-TW、es-ES、de-DE、ko-KR、ja-JP）—— 标题、简短描述、完整描述和更新说明；en-US 和 zh-CN 还包含图标和截图。F-Droid 会直接从仓库读取。
+- **构建元数据：** [`fdroid/com.mqttabot.yml`](fdroid/com.mqttabot.yml)，与提交的文件完全一致。它在发布对应的 commit 上构建 `app`，与 `Binaries`（GitHub release 的 APK）比对并要求其签名属于 `AllowedAPKSigningKeys`，同时使用 `AutoUpdateMode: Version` 和 `UpdateCheckMode: Tags`，收录后每个新的 `vX.Y.Z` tag 都会被自动识别。
+- **已用 fdroidserver 验证：** `fdroid lint` 通过，从 GitHub tag 执行的 `fdroid build` 成功，并报告 "compared built binary to supplied reference binary successfully"。
 
-**提交收录（一次性）：**
-
-1. 确认该版本的 tag 已在 GitHub 上（例如 `v1.0.0`）。
-2. 在 GitLab.com 上 fork [fdroiddata](https://gitlab.com/fdroid/fdroiddata)，把 `fdroid/com.mqttabot.yml` 复制为 fork 中的 `metadata/com.mqttabot.yml`。
-3. 使用 "App inclusion" 模板创建 merge request。F-Droid 的 CI 会构建它，审核人员可能会提出修改意见。
-4. 合并后，新版本只需要推送新的 tag，F-Droid 会在几天内发布。
+merge request 被接受后，新版本只需按正常流程发布（见[版本发布](#版本发布)）；F-Droid 会识别新的 tag 并在几天内发布。可复现性依赖于相同的构建工具链，因此升级 Gradle、AGP 或 JDK 时，要保持发布 workflow（JDK 21）与 F-Droid 构建一致。
 
 源码中不能引入非自由依赖，也不能使用 Google、Maven Central 和 Gradle 插件门户以外的 Maven 仓库，否则 F-Droid 的扫描器会拒绝构建。
 

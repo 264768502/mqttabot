@@ -1,0 +1,1 @@
+Erste Version: MQTT veröffentlichen und abonnieren, Abonnement-Dienst im Hintergrund, integrierte öffentliche Broker mit Benutzername/Passwort sowie Tasker-Aktion zum Veröffentlichen und Ereignis für empfangene Nachrichten.

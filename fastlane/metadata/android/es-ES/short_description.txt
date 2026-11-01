@@ -1,0 +1,1 @@
+Cliente MQTT con servicio de suscripción en segundo plano y plugin de Tasker

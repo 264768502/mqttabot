@@ -1,0 +1,11 @@
+MqttABot ist ein schlanker MQTT-Client, der dein Smartphone mit MQTT-Brokern und mit Tasker verbindet.
+
+Funktionen:
+* Nachrichten mit beliebigem Topic, Inhalt, QoS und Retain-Flag veröffentlichen.
+* Abonnement-Dienst im Hintergrund: Ein Vordergrunddienst mit dauerhafter Benachrichtigung hält die Verbindung offen, verbindet sich nach Netzwerkabbrüchen automatisch neu und abonniert erneut. Er kann beim Systemstart starten.
+* Integrierte öffentliche Broker (Eclipse Mosquitto, HiveMQ, EMQX, Eclipse IoT; TCP und TLS) oder ein eigener Broker, mit Benutzername, Passwort, Client-ID, Keep-Alive und Clean Session.
+* Tasker-Aktion „MqttABot: Veröffentlichen“ sendet MQTT-Nachrichten aus Tasker-Tasks. Topic und Inhalt dürfen Tasker-Variablen enthalten.
+* Tasker-Ereignis „MqttABot: Nachricht empfangen“ löst Profile aus, wenn eine abonnierte Nachricht eintrifft. Es unterstützt Topic-Platzhalter (+ und #) und einen optionalen regulären Ausdruck für den Inhalt und setzt %mqtt_topic, %mqtt_payload, %mqtt_qos, %mqtt_retained, %mqtt_received_at.
+* Oberfläche auf Englisch, vereinfachtem Chinesisch, traditionellem Chinesisch, Spanisch, Deutsch, Koreanisch und Japanisch.
+
+Läuft ab Android 7.0. Open Source unter der MIT-Lizenz, ohne Werbung und ohne Tracking.

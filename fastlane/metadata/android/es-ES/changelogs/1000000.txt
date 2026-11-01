@@ -1,0 +1,1 @@
+Primera versión: publicación y suscripción MQTT, servicio de suscripción en segundo plano, brókers públicos integrados con usuario y contraseña, y la acción de publicación y el evento de mensaje recibido de Tasker.

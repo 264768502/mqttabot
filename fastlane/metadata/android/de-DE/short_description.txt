@@ -1,0 +1,1 @@
+MQTT-Client mit Abonnement-Dienst im Hintergrund und Tasker-Plugin

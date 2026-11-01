@@ -1,0 +1,11 @@
+MqttABot은 휴대폰을 MQTT 브로커 및 Tasker와 연결하는 가벼운 MQTT 클라이언트입니다.
+
+기능:
+* 원하는 토픽, 페이로드, QoS, 유지(retain) 플래그로 메시지를 게시합니다.
+* 백그라운드 구독 서비스: 상시 알림이 있는 포그라운드 서비스가 연결을 유지하고, 네트워크가 끊긴 후 자동으로 다시 연결하고 다시 구독합니다. 부팅 시 자동으로 시작할 수 있습니다.
+* 내장 공개 브로커(Eclipse Mosquitto, HiveMQ, EMQX, Eclipse IoT; TCP 및 TLS) 또는 직접 설정한 브로커를 사용하며, 사용자 이름, 비밀번호, 클라이언트 ID, Keep-alive, 클린 세션을 설정할 수 있습니다.
+* Tasker 작업 "MqttABot: 게시"는 Tasker 작업에서 MQTT 메시지를 보냅니다. 토픽과 페이로드에 Tasker 변수를 사용할 수 있습니다.
+* Tasker 이벤트 "MqttABot: 메시지 수신"은 구독한 메시지가 도착하면 프로필을 실행합니다. 토픽 와일드카드(+ 및 #)와 선택적 페이로드 정규식을 지원하며 %mqtt_topic, %mqtt_payload, %mqtt_qos, %mqtt_retained, %mqtt_received_at 변수를 설정합니다.
+* 영어, 중국어 간체, 중국어 번체, 스페인어, 독일어, 한국어, 일본어 인터페이스를 지원합니다.
+
+Android 7.0 이상에서 작동합니다. MIT 라이선스의 오픈 소스이며 광고와 추적이 없습니다.

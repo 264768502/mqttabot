@@ -1,14 +1,20 @@
+<div align="center">
+
+<img src="art/icon.svg" width="128" height="128" alt="MqttABot icon">
+
 # MqttABot
 
-[![CI](https://github.com/264768502/mqttabot/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/264768502/mqttabot/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/264768502/mqttabot?include_prereleases&sort=semver)](https://github.com/264768502/mqttabot/releases)
-[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](#build-and-test)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Min API](https://img.shields.io/badge/API-24%2B-brightgreen.svg?logo=android&logoColor=white)](https://developer.android.com/about/versions/nougat)
-[![Target SDK](https://img.shields.io/badge/targetSdk-36%20%28Android%2016%29-blue.svg?logo=android&logoColor=white)](https://developer.android.com/about/versions/16)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-7F52FF.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org)
-[![Tasker plugin](https://img.shields.io/badge/Tasker-plugin-orange.svg)](https://tasker.joaoapps.com/)
-[![Last commit](https://img.shields.io/github/last-commit/264768502/mqttabot)](https://github.com/264768502/mqttabot/commits/main)
+[![CI](https://img.shields.io/github/actions/workflow/status/264768502/mqttabot/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/264768502/mqttabot/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/264768502/mqttabot?include_prereleases&sort=semver&style=for-the-badge&color=1E88E5&logo=github&logoColor=white)](https://github.com/264768502/mqttabot/releases)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-43A047?style=for-the-badge&logo=codecov&logoColor=white)](#build-and-test)
+[![License: MIT](https://img.shields.io/badge/License-MIT-FFA000?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
+[![Min API](https://img.shields.io/badge/API-24%2B-43A047?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/about/versions/nougat)
+[![Target SDK](https://img.shields.io/badge/targetSdk-36%20%28Android%2016%29-00897B?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/about/versions/16)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-7E57C2?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Tasker plugin](https://img.shields.io/badge/Tasker-plugin-EF6C00?style=for-the-badge&logo=android&logoColor=white)](https://tasker.joaoapps.com/)
+[![Last commit](https://img.shields.io/github/last-commit/264768502/mqttabot?style=for-the-badge&color=6A1B9A&logo=git&logoColor=white)](https://github.com/264768502/mqttabot/commits/main)
+
+</div>
 
 **English** | [简体中文](README.zh-CN.md)
 
@@ -104,18 +110,13 @@ Without them, final releases are refused. Pre-releases are signed with the runne
 
 ## F-Droid
 
-MqttABot is prepared for the official [F-Droid](https://f-droid.org) repository. F-Droid builds the app itself from the tagged source and signs it with F-Droid's key, so its APKs can't be upgraded in place by GitHub release APKs (or the other way round).
+MqttABot has been submitted to the official [F-Droid](https://f-droid.org) repository: [fdroiddata!55280](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/55280). F-Droid builds the app itself from the tagged source. Builds are **reproducible**: F-Droid checks that its build matches the signed GitHub release byte for byte and then ships that APK with our signature, so users can switch between F-Droid and GitHub releases without uninstalling.
 
-- **Store listing:** `fastlane/metadata/android/{en-US,zh-CN}/` — title, short and full description, icon, screenshots and changelogs. F-Droid picks these up from the repository.
-- **Build metadata:** [`fdroid/com.mqttabot.yml`](fdroid/com.mqttabot.yml). It builds `app` from tag `v<version>` and uses `AutoUpdateMode: Version` with `UpdateCheckMode: Tags`, so every new `vX.Y.Z` tag is picked up automatically after inclusion.
-- **Checked with fdroidserver:** `fdroid lint` passes, and `fdroid build` (source scan + build from the tag) succeeds locally.
+- **Store listing:** `fastlane/metadata/android/<locale>/` (en-US, zh-CN, zh-TW, es-ES, de-DE, ko-KR, ja-JP) — title, short and full description and changelogs; en-US and zh-CN also have the icon and screenshots. F-Droid picks these up from the repository.
+- **Build metadata:** [`fdroid/com.mqttabot.yml`](fdroid/com.mqttabot.yml), identical to the submitted file. It builds `app` at the release commit, verifies it against `Binaries` (the GitHub release APK) signed by `AllowedAPKSigningKeys`, and uses `AutoUpdateMode: Version` with `UpdateCheckMode: Tags`, so every new `vX.Y.Z` tag is picked up automatically after inclusion.
+- **Checked with fdroidserver:** `fdroid lint` passes, and `fdroid build` succeeds from the GitHub tag and reports "compared built binary to supplied reference binary successfully".
 
-**Submitting (one time):**
-
-1. Make sure the version's tag exists on GitHub (e.g. `v1.0.0`).
-2. Fork [fdroiddata](https://gitlab.com/fdroid/fdroiddata) on GitLab.com and copy `fdroid/com.mqttabot.yml` to `metadata/com.mqttabot.yml` in your fork.
-3. Open a merge request with the "App inclusion" template. F-Droid's CI builds it; reviewers may ask for changes.
-4. After it is merged, new versions only need a new tag; F-Droid publishes them within a few days.
+After the merge request is accepted, new versions only need a normal release (see [Releasing](#releasing)); F-Droid picks up the tag and publishes within a few days. Reproducibility depends on building with the same toolchain, so keep the release workflow (JDK 21) and the F-Droid build in sync when upgrading Gradle, AGP or the JDK.
 
 Keep the source free of non-free dependencies and of Maven repositories other than Google, Maven Central and the Gradle plugin portal; F-Droid's scanner rejects builds that use others.
 
