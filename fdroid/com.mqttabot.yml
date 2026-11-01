@@ -7,21 +7,25 @@ SourceCode: https://github.com/264768502/mqttabot
 IssueTracker: https://github.com/264768502/mqttabot/issues
 Changelog: https://github.com/264768502/mqttabot/releases
 
+AutoName: MqttABot
+
 RepoType: git
 Repo: https://github.com/264768502/mqttabot.git
-Binaries: https://github.com/264768502/mqttabot/releases/download/v%v/mqttabot-%v-release.apk
+Binaries: 
+  https://github.com/264768502/mqttabot/releases/download/v%v/mqttabot-%v-release.apk
 
 Builds:
-  - versionName: 1.0.0
-    versionCode: 1000000
-    commit: d47b388facdef051e1c1c7138dc47f10060395ff
+  - versionName: 1.0.1
+    versionCode: 1000001
+    commit: dc9f3f56be9087cd0c2366248a32b8de8f3325c2
     subdir: app
     gradle:
       - yes
 
-AllowedAPKSigningKeys: 7e2ae12b41f3df3a05f8a0e60c15880354e99dd7bf7a94fdbf2313c15f9977a1
+AllowedAPKSigningKeys: 
+  7e2ae12b41f3df3a05f8a0e60c15880354e99dd7bf7a94fdbf2313c15f9977a1
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
-CurrentVersion: 1.0.0
-CurrentVersionCode: 1000000
+CurrentVersion: 1.0.1
+CurrentVersionCode: 1000001
