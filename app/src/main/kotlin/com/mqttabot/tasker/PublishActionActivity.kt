@@ -2,53 +2,69 @@ package com.mqttabot.tasker
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.CompoundButton
-import android.widget.EditText
-import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.textfield.TextInputLayout
+import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.mqttabot.R
 import com.mqttabot.mqtt.Topics
-import com.mqttabot.ui.QosToggleGroup
-import com.mqttabot.ui.setEdgeToEdgeContentView
+import com.mqttabot.ui.FormField
+import com.mqttabot.ui.QosSelector
+import com.mqttabot.ui.SwitchRow
+import com.mqttabot.ui.TAG_PAYLOAD
+import com.mqttabot.ui.TAG_QOS
+import com.mqttabot.ui.TAG_RETAIN
+import com.mqttabot.ui.TAG_TOPIC
+import com.mqttabot.ui.theme.setThemedContent
 
 /** Tasker edit screen for the "MQTT publish" action. */
-class PublishActionActivity : AppCompatActivity() {
-    private lateinit var topicLayout: TextInputLayout
-    private lateinit var topic: EditText
-    private lateinit var payload: EditText
-    private lateinit var qos: QosToggleGroup
-    private lateinit var retained: CompoundButton
-
+class PublishActionActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setEdgeToEdgeContentView(R.layout.activity_publish_action)
-        topicLayout = findViewById(R.id.topic_layout)
-        topic = findViewById(R.id.topic_input)
-        payload = findViewById(R.id.payload_input)
-        qos = findViewById(R.id.qos_group)
-        retained = findViewById(R.id.retain_check)
-
-        PublishActionConfig.fromBundle(intent.getBundleExtra(TaskerApi.EXTRA_BUNDLE))?.let {
-            topic.setText(it.topic)
-            payload.setText(it.payload)
-            qos.qos = it.qos
-            retained.isChecked = it.retained
-        }
-        findViewById<Button>(R.id.save_button).setOnClickListener { save() }
-        findViewById<Button>(R.id.cancel_button).setOnClickListener {
-            setResult(RESULT_CANCELED)
-            finish()
+        val initial = PublishActionConfig.fromBundle(intent.getBundleExtra(TaskerApi.EXTRA_BUNDLE))
+        setThemedContent {
+            var topic by rememberSaveable { mutableStateOf(initial?.topic.orEmpty()) }
+            var payload by rememberSaveable { mutableStateOf(initial?.payload.orEmpty()) }
+            var qos by rememberSaveable { mutableIntStateOf(initial?.qos?.coerceIn(0, 2) ?: 0) }
+            var retained by rememberSaveable { mutableStateOf(initial?.retained ?: false) }
+            var topicError by rememberSaveable { mutableStateOf(false) }
+            TaskerEditScaffold(
+                title = stringResource(R.string.tasker_publish_label),
+                hint = stringResource(R.string.tasker_publish_hint),
+                onCancel = ::cancel,
+                onSave = {
+                    val topicText = topic.trim()
+                    topicError = !Topics.isValidTopicName(topicText)
+                    if (!topicError) save(PublishActionConfig(topicText, payload, qos, retained))
+                },
+            ) {
+                FormField(
+                    topic,
+                    { topic = it },
+                    stringResource(R.string.hint_topic),
+                    TAG_TOPIC,
+                    modifier = Modifier.padding(top = 8.dp),
+                    error = if (topicError) stringResource(R.string.error_topic) else null,
+                )
+                FormField(payload, { payload = it }, stringResource(R.string.hint_payload), TAG_PAYLOAD, singleLine = false)
+                QosSelector(qos, { qos = it }, TAG_QOS, Modifier.padding(top = 8.dp))
+                SwitchRow(stringResource(R.string.label_retain), retained, { retained = it }, TAG_RETAIN)
+            }
         }
     }
 
-    private fun save() {
-        val topicText = topic.text.toString().trim()
-        if (!Topics.isValidTopicName(topicText)) {
-            topicLayout.error = getString(R.string.error_topic)
-            return
-        }
-        val config = PublishActionConfig(topicText, payload.text.toString(), qos.qos, retained.isChecked)
+    private fun cancel() {
+        setResult(RESULT_CANCELED)
+        finish()
+    }
+
+    private fun save(config: PublishActionConfig) {
         val result =
             Intent()
                 .putExtra(TaskerApi.EXTRA_BUNDLE, config.toBundle())

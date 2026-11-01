@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Width of the scrolling content column; -1 = match_parent on compact screens. -->
-    <item name="content_width" format="integer" type="dimen">-1</item>
-    <dimen name="screen_margin">16dp</dimen>
-</resources>

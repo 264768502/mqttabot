@@ -14,3 +14,7 @@ max_line_length = 140
 
 [*.{yml,yaml}]
 indent_size = 2
+
+[*.kt]
+# Composable functions are PascalCase by convention.
+ktlint_function_naming_ignore_when_annotated_with = Composable

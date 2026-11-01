@@ -62,4 +62,24 @@
     <string name="tasker_event_hint">%mqtt_topic, %mqtt_payload, %mqtt_qos, %mqtt_retained, %mqtt_received_at 변수를 설정합니다. 필터는 앱의 구독 목록에 추가됩니다.</string>
     <string name="tasker_publish_blurb">%1$s에 게시(QoS %2$d)</string>
     <string name="tasker_event_blurb">%1$s의 메시지</string>
+
+    <string name="section_background">백그라운드 활동</string>
+    <string name="background_unrestricted">제한 없음</string>
+    <string name="background_optimized">최적화됨</string>
+    <string name="background_restricted">제한됨</string>
+    <string name="background_hint_ok">Android가 MqttABot이 백그라운드에서 연결을 유지하도록 허용합니다.</string>
+    <string name="background_hint_limited">Android가 백그라운드에서 구독 서비스를 일시 중지할 수 있어 메시지와 Tasker 이벤트를 놓칠 수 있습니다.</string>
+    <string name="action_allow_background">제한 없음 허용</string>
+    <string name="rationale_notifications_title">알림이 꺼져 있음</string>
+    <string name="rationale_notifications">구독 서비스가 실행되는 동안 MqttABot은 연결 상태와 중지 버튼이 있는 상시 알림을 표시합니다. 알림이 없어도 서비스는 계속 실행되지만 상태를 볼 수 없습니다. 설정에서 알림을 켤 수 있습니다.</string>
+    <string name="rationale_background_title">백그라운드 활동이 제한됨</string>
+    <string name="rationale_background">화면이 꺼져 있을 때도 MQTT 메시지를 받고 Tasker를 실행하려면 MqttABot이 백그라운드에서 연결을 유지해야 합니다. 배터리 최적화가 켜져 있으면 Android가 연결을 끊을 수 있습니다. 설정에서 MqttABot의 배터리 사용량을 제한 없음으로 설정하세요.</string>
+    <string name="action_open_settings">설정 열기</string>
+    <string name="action_not_now">나중에</string>
+    <string name="action_show_password">비밀번호 표시</string>
+    <string name="action_hide_password">비밀번호 숨기기</string>
+    <string name="theme_title">테마</string>
+    <string name="theme_auto">자동 (19:00–07:00 어둡게)</string>
+    <string name="theme_light">밝게</string>
+    <string name="theme_dark">어둡게</string>
 </resources>

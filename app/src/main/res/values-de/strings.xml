@@ -62,4 +62,24 @@
     <string name="tasker_event_hint">Setzt %mqtt_topic, %mqtt_payload, %mqtt_qos, %mqtt_retained und %mqtt_received_at. Der Filter wird zu den Abonnements der App hinzugefügt.</string>
     <string name="tasker_publish_blurb">An %1$s veröffentlichen (QoS %2$d)</string>
     <string name="tasker_event_blurb">Nachricht auf %1$s</string>
+
+    <string name="section_background">Hintergrundaktivität</string>
+    <string name="background_unrestricted">Nicht eingeschränkt</string>
+    <string name="background_optimized">Optimiert</string>
+    <string name="background_restricted">Eingeschränkt</string>
+    <string name="background_hint_ok">Android erlaubt MqttABot, die Verbindung im Hintergrund offen zu halten.</string>
+    <string name="background_hint_limited">Android kann den Abonnementdienst im Hintergrund pausieren, sodass Nachrichten und Tasker-Ereignisse verloren gehen können.</string>
+    <string name="action_allow_background">Uneingeschränkt erlauben</string>
+    <string name="rationale_notifications_title">Benachrichtigungen sind aus</string>
+    <string name="rationale_notifications">Während der Abonnementdienst läuft, zeigt MqttABot eine dauerhafte Benachrichtigung mit dem Verbindungsstatus und einer Stopp-Schaltfläche. Der Dienst läuft auch ohne sie weiter, aber du siehst seinen Status nicht. Du kannst Benachrichtigungen in den Einstellungen aktivieren.</string>
+    <string name="rationale_background_title">Hintergrundaktivität ist eingeschränkt</string>
+    <string name="rationale_background">Um MQTT-Nachrichten bei ausgeschaltetem Bildschirm zu empfangen und Tasker auszulösen, hält MqttABot im Hintergrund eine Verbindung offen. Mit Akkuoptimierung kann Android diese Verbindung trennen. Stelle in den Einstellungen die Akkunutzung von MqttABot auf Nicht eingeschränkt.</string>
+    <string name="action_open_settings">Einstellungen öffnen</string>
+    <string name="action_not_now">Nicht jetzt</string>
+    <string name="action_show_password">Passwort anzeigen</string>
+    <string name="action_hide_password">Passwort verbergen</string>
+    <string name="theme_title">Design</string>
+    <string name="theme_auto">Automatisch (dunkel 19:00–07:00)</string>
+    <string name="theme_light">Hell</string>
+    <string name="theme_dark">Dunkel</string>
 </resources>

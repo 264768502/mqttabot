@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Keep forms readable on tablets, foldables and landscape: a centred column. -->
-    <dimen name="content_width">640dp</dimen>
-    <dimen name="screen_margin">24dp</dimen>
-</resources>

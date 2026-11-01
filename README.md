@@ -23,6 +23,7 @@ Android MQTT client + persistent subscription service + Tasker plugin. Written e
 
 - Minimum Android 7.0 (API 24), target Android 16 (API 36), compiled against SDK 37
 - MQTT library: Eclipse Paho `mqttv3` (pure Java)
+- UI: Jetpack Compose with Material 3 Expressive (`material3` 1.5)
 - Build: Gradle 9.8 + AGP 9.5 (built-in Kotlin)
 
 ## Install
@@ -45,6 +46,12 @@ Both channels ship the same APK signed with the same key, so you can switch betw
 | :---: | :---: | :---: | :---: |
 | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1_main.png" width="200" alt="Main screen"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2_messages.png" width="200" alt="Messages"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3_broker_settings.png" width="200" alt="Broker settings"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4_tasker_event.png" width="200" alt="Tasker event configuration"> |
 
+Dark theme:
+
+| | | | |
+| :---: | :---: | :---: | :---: |
+| <img src="docs/screenshots/dark/1_main.png" width="200" alt="Main screen (dark)"> | <img src="docs/screenshots/dark/2_messages.png" width="200" alt="Messages (dark)"> | <img src="docs/screenshots/dark/3_broker_settings.png" width="200" alt="Broker settings (dark)"> | <img src="docs/screenshots/dark/4_tasker_event.png" width="200" alt="Tasker event (dark)"> |
+
 ## Features
 
 | Feature | Description |
@@ -54,7 +61,10 @@ Both channels ship the same APK signed with the same key, so you can switch betw
 | Built-in brokers | test.mosquitto.org (TCP / TLS / authenticated 1884), broker.hivemq.com, broker.emqx.io, mqtt.eclipseprojects.io (TCP and TLS), or a custom broker; supports username, password, client ID, keep-alive and clean session. |
 | Tasker action | "MqttABot: Publish" — publish MQTT messages from Tasker; topic and payload accept Tasker `%variables`. |
 | Tasker event | "MqttABot: Message received" — received messages trigger Tasker profiles, with topic wildcards (`+`, `#`) and an optional payload regex. Saving the event adds its filter to the subscription list. |
-| Interface | Material 3 Expressive: wallpaper-based dynamic color on Android 12+ (brand purple otherwise), light and dark themes, edge-to-edge layout, collapsing top app bar, connected button groups for QoS, and a centred column on tablets and in landscape. |
+| Interface | Jetpack Compose, Material 3 Expressive: wallpaper-based dynamic color on Android 12+ (brand purple otherwise), edge-to-edge layout, collapsing top app bar, connected button groups for QoS, and a centred column on tablets and in landscape. |
+| Theme | Automatic (light 07:00–19:00, dark otherwise; switches live), or always light / always dark. Chosen from the top bar. |
+| Background activity | The main screen shows the app's battery usage setting (Unrestricted / Optimized / Restricted) and opens the right system screen to allow unrestricted background activity, so the subscription keeps running with the screen off. |
+| Permissions | Asked for only when needed: notifications (Android 13+) when the service starts. If declined, the app explains why it needs it and links to the system setting. |
 | Languages | English, Simplified Chinese, Traditional Chinese, Spanish, German, Korean and Japanese. The app follows the system language and falls back to English; on Android 13+ it can also be set per app in system settings. |
 
 ### Using with Tasker
@@ -83,14 +93,14 @@ Requires JDK 17+ and the Android SDK (`platforms;android-37.0`, `build-tools;37.
 ./gradlew testDebugUnitTest                     # all JVM tests (unit + end-to-end)
 ./gradlew jacocoUnitTestCoverageVerification -PskipE2e   # verify 100% coverage with unit tests only
 ./gradlew testDebugUnitTest --tests 'com.mqttabot.e2e.*'  # end-to-end tests only
-./gradlew testDebugUnitTest -Pscreenshots               # re-render screenshots + icon in fastlane/
+./gradlew testDebugUnitTest -Pscreenshots               # re-render screenshots + icon (fastlane/, docs/screenshots/dark/)
 ```
 
 Coverage report: `app/build/reports/jacoco/jacocoUnitTestReport/html/index.html`. The gate requires 100% instruction, branch, line, method and class coverage (only generated `R`/`BuildConfig` are excluded).
 
 ### About the tests
 
-- Unit tests use JUnit4 + Robolectric (API 36 by default; `MinSdkCompatTest` runs the main flows on API 24) + MockK.
+- Unit tests use JUnit4 + Robolectric (API 36 by default; `MinSdkCompatTest` runs the main flows on API 24) + MockK; screens are driven with the Compose UI test APIs (`createEmptyComposeRule` + `ActivityScenario`).
 - End-to-end tests (`app/src/test/kotlin/com/mqttabot/e2e/`) start a real MQTT broker in-process (Moquette, with its native dependencies excluded so it runs on pure Java/NIO). The app uses the real Paho client over real sockets, and `FakeTasker` drives the plugin using Tasker's protocol:
   - `PublishEndToEndTest`: configure the action in the Tasker edit screen → variable substitution → `FIRE_SETTING` → broker → an independent subscriber receives the message; also publishing from the main screen over the service's long-lived connection.
   - `SubscribeEndToEndTest`: configure the event in the Tasker edit screen → start the foreground service → another client publishes → `REQUEST_QUERY` → `QUERY_CONDITION` returns "satisfied" with variables; also verifies automatic reconnect and resubscribe after the broker drops the connection.

@@ -4,29 +4,37 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.os.Looper
-import android.widget.EditText
-import androidx.core.widget.NestedScrollView
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.android.material.appbar.AppBarLayout
 import com.mqttabot.AppGraph
 import com.mqttabot.R
 import com.mqttabot.data.Subscription
+import com.mqttabot.data.ThemeMode
 import com.mqttabot.mqtt.BrokerConfig
 import com.mqttabot.mqtt.ReceivedMessage
 import com.mqttabot.tasker.EventConfigActivity
+import com.mqttabot.tasker.TAG_PATTERN
 import com.mqttabot.tasker.TaskerApi
 import com.mqttabot.testutil.FakeGateway
 import com.mqttabot.testutil.ManualTaskRunner
 import com.mqttabot.ui.BrokerSettingsActivity
 import com.mqttabot.ui.MainActivity
-import com.mqttabot.ui.QosToggleGroup
+import com.mqttabot.ui.TAG_FILTER
+import com.mqttabot.ui.TAG_MAIN_LIST
+import com.mqttabot.ui.TAG_PAYLOAD
+import com.mqttabot.ui.TAG_QOS
+import com.mqttabot.ui.TAG_TOPIC
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.Robolectric
-import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.io.File
@@ -34,12 +42,15 @@ import java.util.Calendar
 
 /**
  * Renders store/README screenshots with Robolectric's native graphics. Runs only with
- * `./gradlew :app:testDebugUnitTest -Pscreenshots`; writes into fastlane/metadata/android/.
+ * `./gradlew :app:testDebugUnitTest -Pscreenshots`; writes into [dir] under the repository root.
  */
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 abstract class ScreenshotTest(
-    private val locale: String,
+    private val dir: String,
+    private val theme: ThemeMode = ThemeMode.LIGHT,
 ) {
+    @get:Rule val compose = createEmptyComposeRule()
+
     private val app = ApplicationProvider.getApplicationContext<android.app.Application>()
 
     @Before
@@ -55,10 +66,11 @@ abstract class ScreenshotTest(
             ),
         )
         AppGraph.settings.autoStartOnBoot = true
-        // Brand colors instead of Robolectric's default wallpaper palette.
-        AppGraph.dynamicColor = false
         AppGraph.settings.addSubscription(Subscription("home/+/temperature", 1))
         AppGraph.settings.addSubscription(Subscription("home/door/#", 2))
+        // Brand colors instead of Robolectric's default wallpaper palette.
+        AppGraph.dynamicColor = false
+        AppGraph.themeMode.set(theme)
         // A connected service, so status and the start/stop button agree.
         AppGraph.gatewayFactory = { FakeGateway() }
         AppGraph.taskRunnerFactory = { ManualTaskRunner() }
@@ -69,57 +81,60 @@ abstract class ScreenshotTest(
         AppGraph.messageLog.add(ReceivedMessage("home/livingroom/temperature", "22.8", 1, true, base + 125_000))
     }
 
-    @Test
-    fun main() {
-        val a = Robolectric.buildActivity(MainActivity::class.java).setup().get()
-        a.findViewById<EditText>(R.id.topic_input).setText("home/livingroom/light")
-        a.findViewById<EditText>(R.id.payload_input).setText("ON")
-        a.findViewById<QosToggleGroup>(R.id.qos_group).qos = 1
-        capture(a, "1_main")
+    private fun <A : Activity> ActivityScenario<A>.capture(name: String) {
+        onActivity { activity ->
+            // No text cursor in store screenshots.
+            activity.window.decorView
+                .findFocus()
+                ?.clearFocus()
+        }
+        compose.waitForIdle()
+        onActivity { activity ->
+            val view = activity.window.decorView
+            val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+            view.draw(Canvas(bitmap))
+            write(bitmap, "$dir/$name.png")
+        }
+        close()
     }
 
-    /** Scrolled to the bottom, with the app bar collapsed. */
+    @Test
+    fun main() {
+        val s = ActivityScenario.launch(MainActivity::class.java)
+        compose.onNodeWithTag(TAG_TOPIC).performTextReplacement("home/livingroom/light")
+        compose.onNodeWithTag(TAG_PAYLOAD).performTextReplacement("ON")
+        compose.onNodeWithTag("$TAG_QOS-1").performClick()
+        s.capture("1_main")
+    }
+
+    /** Scrolled to the bottom by touch, so the top app bar collapses too. */
     @Test
     fun messages() {
-        val a = Robolectric.buildActivity(MainActivity::class.java).setup().get()
-        a.findViewById<AppBarLayout>(R.id.app_bar).setExpanded(false, false)
-        shadowOf(Looper.getMainLooper()).idle()
-        val content = a.findViewById<NestedScrollView>(R.id.content)
-        content.scrollTo(0, content.getChildAt(0).height)
-        capture(a, "2_messages")
+        val s = ActivityScenario.launch(MainActivity::class.java)
+        repeat(6) { compose.onNodeWithTag(TAG_MAIN_LIST).performTouchInput { swipeUp() } }
+        s.capture("2_messages")
     }
 
     @Test
     fun brokerSettings() {
-        capture(Robolectric.buildActivity(BrokerSettingsActivity::class.java).setup().get(), "3_broker_settings")
+        ActivityScenario.launch(BrokerSettingsActivity::class.java).capture("3_broker_settings")
     }
 
     @Test
     fun taskerEvent() {
         val intent = Intent(TaskerApi.ACTION_EDIT_EVENT).setClass(app, EventConfigActivity::class.java)
-        val a = Robolectric.buildActivity(EventConfigActivity::class.java, intent).setup().get()
-        a.findViewById<EditText>(R.id.filter_input).setText("home/+/temperature")
-        a.findViewById<EditText>(R.id.pattern_input).setText("^\\d+(\\.\\d+)?$")
-        capture(a, "4_tasker_event")
-    }
-
-    private fun capture(
-        activity: Activity,
-        name: String,
-    ) {
-        shadowOf(Looper.getMainLooper()).idle()
-        val view = activity.window.decorView
-        val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
-        view.draw(Canvas(bitmap))
-        write(bitmap, "images/phoneScreenshots/$name.png")
+        val s = ActivityScenario.launch<EventConfigActivity>(intent)
+        compose.onNodeWithTag(TAG_FILTER).performTextReplacement("home/+/temperature")
+        compose.onNodeWithTag(TAG_PATTERN).performTextReplacement("^\\d+(\\.\\d+)?$")
+        s.capture("4_tasker_event")
     }
 
     protected fun write(
         bitmap: Bitmap,
         path: String,
     ) {
-        val root = File(checkNotNull(System.getProperty("screenshot.dir")) { "Run with -Pscreenshots" })
-        val file = File(root, "$locale/$path")
+        val root = File(checkNotNull(System.getProperty("screenshot.root")) { "Run with -Pscreenshots" })
+        val file = File(root, path)
         file.parentFile!!.mkdirs()
         file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
@@ -127,7 +142,7 @@ abstract class ScreenshotTest(
 
 @RunWith(AndroidJUnit4::class)
 @Config(qualifiers = "en-rUS-w400dp-h880dp-xhdpi")
-class EnglishScreenshotTest : ScreenshotTest("en-US") {
+class EnglishScreenshotTest : ScreenshotTest("$STORE/en-US/images/phoneScreenshots") {
     /** 512x512 store icon rendered from the adaptive launcher icon. */
     @Test
     fun icon() {
@@ -136,10 +151,17 @@ class EnglishScreenshotTest : ScreenshotTest("en-US") {
         val bitmap = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888)
         drawable.setBounds(0, 0, 512, 512)
         drawable.draw(Canvas(bitmap))
-        write(bitmap, "images/icon.png")
+        write(bitmap, "$STORE/en-US/images/icon.png")
     }
 }
 
 @RunWith(AndroidJUnit4::class)
 @Config(qualifiers = "zh-rCN-w400dp-h880dp-xhdpi")
-class ChineseScreenshotTest : ScreenshotTest("zh-CN")
+class ChineseScreenshotTest : ScreenshotTest("$STORE/zh-CN/images/phoneScreenshots")
+
+/** Dark theme, for the README only (not a store locale). */
+@RunWith(AndroidJUnit4::class)
+@Config(qualifiers = "en-rUS-w400dp-h880dp-xhdpi")
+class DarkScreenshotTest : ScreenshotTest("docs/screenshots/dark", ThemeMode.DARK)
+
+private const val STORE = "fastlane/metadata/android"

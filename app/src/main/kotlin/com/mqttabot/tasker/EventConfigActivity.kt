@@ -2,66 +2,80 @@ package com.mqttabot.tasker
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.textfield.TextInputLayout
+import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.mqttabot.AppGraph
 import com.mqttabot.R
 import com.mqttabot.data.Subscription
 import com.mqttabot.mqtt.Topics
-import com.mqttabot.ui.QosToggleGroup
-import com.mqttabot.ui.setEdgeToEdgeContentView
+import com.mqttabot.ui.FormField
+import com.mqttabot.ui.QosSelector
+import com.mqttabot.ui.TAG_FILTER
+import com.mqttabot.ui.TAG_QOS
+import com.mqttabot.ui.theme.setThemedContent
+
+const val TAG_PATTERN = "pattern"
 
 /** Tasker edit screen for the "MQTT message received" event. */
-class EventConfigActivity : AppCompatActivity() {
-    private lateinit var filterLayout: TextInputLayout
-    private lateinit var filter: EditText
-    private lateinit var patternLayout: TextInputLayout
-    private lateinit var pattern: EditText
-    private lateinit var qos: QosToggleGroup
-
+class EventConfigActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setEdgeToEdgeContentView(R.layout.activity_event_config)
-        filterLayout = findViewById(R.id.filter_layout)
-        filter = findViewById(R.id.filter_input)
-        patternLayout = findViewById(R.id.pattern_layout)
-        pattern = findViewById(R.id.pattern_input)
-        qos = findViewById(R.id.qos_group)
-        qos.qos = 1
-
-        EventFilterConfig.fromBundle(intent.getBundleExtra(TaskerApi.EXTRA_BUNDLE))?.let {
-            filter.setText(it.topicFilter)
-            pattern.setText(it.payloadPattern)
-            qos.qos = it.qos
-        }
-        findViewById<Button>(R.id.save_button).setOnClickListener { save() }
-        findViewById<Button>(R.id.cancel_button).setOnClickListener {
-            setResult(RESULT_CANCELED)
-            finish()
+        val initial = EventFilterConfig.fromBundle(intent.getBundleExtra(TaskerApi.EXTRA_BUNDLE))
+        setThemedContent {
+            var filter by rememberSaveable { mutableStateOf(initial?.topicFilter.orEmpty()) }
+            var pattern by rememberSaveable { mutableStateOf(initial?.payloadPattern.orEmpty()) }
+            var qos by rememberSaveable { mutableIntStateOf(initial?.qos?.coerceIn(0, 2) ?: 1) }
+            var filterError by rememberSaveable { mutableStateOf(false) }
+            var patternError by rememberSaveable { mutableStateOf(false) }
+            TaskerEditScaffold(
+                title = stringResource(R.string.tasker_event_label),
+                hint = stringResource(R.string.tasker_event_hint),
+                onCancel = ::cancel,
+                onSave = {
+                    val filterText = filter.trim()
+                    filterError = !Topics.isValidFilter(filterText)
+                    patternError = !filterError && !EventFilterConfig.isValidPattern(pattern)
+                    if (!filterError && !patternError) save(EventFilterConfig(filterText, pattern, qos))
+                },
+            ) {
+                FormField(
+                    filter,
+                    { filter = it },
+                    stringResource(R.string.hint_filter),
+                    TAG_FILTER,
+                    modifier = Modifier.padding(top = 8.dp),
+                    error = if (filterError) stringResource(R.string.error_filter) else null,
+                )
+                FormField(
+                    pattern,
+                    { pattern = it },
+                    stringResource(R.string.hint_pattern),
+                    TAG_PATTERN,
+                    error = if (patternError) stringResource(R.string.error_pattern) else null,
+                )
+                QosSelector(qos, { qos = it }, TAG_QOS, Modifier.padding(top = 8.dp))
+            }
         }
     }
 
-    private fun save() {
-        val filterText = filter.text.toString().trim()
-        val patternText = pattern.text.toString()
-        filterLayout.error = null
-        patternLayout.error = null
-        if (!Topics.isValidFilter(filterText)) {
-            filterLayout.error = getString(R.string.error_filter)
-            return
-        }
-        if (!EventFilterConfig.isValidPattern(patternText)) {
-            patternLayout.error = getString(R.string.error_pattern)
-            return
-        }
-        val config = EventFilterConfig(filterText, patternText, qos.qos)
+    private fun cancel() {
+        setResult(RESULT_CANCELED)
+        finish()
+    }
+
+    private fun save(config: EventFilterConfig) {
         // The event only fires for messages we receive, so make sure we subscribe.
         val subscription = Subscription(config.topicFilter, config.qos)
         AppGraph.settings.addSubscription(subscription)
         AppGraph.controller?.subscribe(subscription)
-
         val result =
             Intent()
                 .putExtra(TaskerApi.EXTRA_BUNDLE, config.toBundle())

@@ -1,13 +1,15 @@
 package com.mqttabot.ui
 
 import android.content.Context
-import androidx.annotation.AttrRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.graphics.Color
 import com.mqttabot.R
 import com.mqttabot.mqtt.ConnectionState
 import com.mqttabot.mqtt.ConnectionStatus
-import com.google.android.material.R as M
 
 fun ConnectionStatus.describe(context: Context): String =
     when (state) {
@@ -21,8 +23,6 @@ fun ConnectionStatus.describe(context: Context): String =
 class StatusStyle(
     @param:StringRes val headline: Int,
     @param:DrawableRes val icon: Int,
-    @param:AttrRes val container: Int,
-    @param:AttrRes val onContainer: Int,
     /** Show the loading indicator instead of the icon. */
     val busy: Boolean = false,
     /** Show [ConnectionStatus.detail] (the last error) below the headline. */
@@ -32,41 +32,21 @@ class StatusStyle(
 val ConnectionState.style: StatusStyle
     get() =
         when (this) {
-            ConnectionState.DISCONNECTED -> {
-                StatusStyle(
-                    R.string.status_disconnected,
-                    R.drawable.ic_cloud_off,
-                    M.attr.colorSurfaceContainerHighest,
-                    M.attr.colorOnSurfaceVariant,
-                )
-            }
-
-            ConnectionState.CONNECTING -> {
-                StatusStyle(
-                    R.string.state_connecting,
-                    R.drawable.ic_cloud_sync,
-                    M.attr.colorSecondaryContainer,
-                    M.attr.colorOnSecondaryContainer,
-                    busy = true,
-                )
-            }
-
-            ConnectionState.CONNECTED -> {
-                StatusStyle(
-                    R.string.state_connected,
-                    R.drawable.ic_cloud_done,
-                    M.attr.colorPrimaryContainer,
-                    M.attr.colorOnPrimaryContainer,
-                )
-            }
-
-            ConnectionState.WAITING_RETRY -> {
-                StatusStyle(
-                    R.string.state_reconnecting,
-                    R.drawable.ic_sync_problem,
-                    M.attr.colorErrorContainer,
-                    M.attr.colorOnErrorContainer,
-                    showDetail = true,
-                )
-            }
+            ConnectionState.DISCONNECTED -> StatusStyle(R.string.status_disconnected, R.drawable.ic_cloud_off)
+            ConnectionState.CONNECTING -> StatusStyle(R.string.state_connecting, R.drawable.ic_cloud_sync, busy = true)
+            ConnectionState.CONNECTED -> StatusStyle(R.string.state_connected, R.drawable.ic_cloud_done)
+            ConnectionState.WAITING_RETRY -> StatusStyle(R.string.state_reconnecting, R.drawable.ic_sync_problem, showDetail = true)
         }
+
+/** Container and content color of the status icon. */
+@Composable
+@ReadOnlyComposable
+fun ConnectionState.colors(): Pair<Color, Color> =
+    with(MaterialTheme.colorScheme) {
+        when (this@colors) {
+            ConnectionState.DISCONNECTED -> surfaceContainerHighest to onSurfaceVariant
+            ConnectionState.CONNECTING -> secondaryContainer to onSecondaryContainer
+            ConnectionState.CONNECTED -> primaryContainer to onPrimaryContainer
+            ConnectionState.WAITING_RETRY -> errorContainer to onErrorContainer
+        }
+    }

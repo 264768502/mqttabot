@@ -62,4 +62,24 @@
     <string name="tasker_event_hint">%mqtt_topic、%mqtt_payload、%mqtt_qos、%mqtt_retained、%mqtt_received_at を設定します。フィルターはアプリの購読リストに追加されます。</string>
     <string name="tasker_publish_blurb">%1$s にパブリッシュ（QoS %2$d）</string>
     <string name="tasker_event_blurb">%1$s のメッセージ</string>
+
+    <string name="section_background">バックグラウンド動作</string>
+    <string name="background_unrestricted">制限なし</string>
+    <string name="background_optimized">最適化</string>
+    <string name="background_restricted">制限</string>
+    <string name="background_hint_ok">Android は MqttABot がバックグラウンドで接続を維持することを許可しています。</string>
+    <string name="background_hint_limited">Android がバックグラウンドで購読サービスを一時停止することがあり、メッセージや Tasker イベントを取りこぼす可能性があります。</string>
+    <string name="action_allow_background">制限なしを許可</string>
+    <string name="rationale_notifications_title">通知がオフです</string>
+    <string name="rationale_notifications">購読サービスの実行中、MqttABot は接続状態と停止ボタンを表示する常駐通知を出します。通知がなくてもサービスは動作し続けますが、状態は確認できません。通知は設定でオンにできます。</string>
+    <string name="rationale_background_title">バックグラウンド動作が制限されています</string>
+    <string name="rationale_background">画面オフの間も MQTT メッセージを受信して Tasker を起動するため、MqttABot はバックグラウンドで接続を維持します。電池の最適化が有効だと Android が接続を切断することがあります。設定で MqttABot の電池使用量を「制限なし」にしてください。</string>
+    <string name="action_open_settings">設定を開く</string>
+    <string name="action_not_now">後で</string>
+    <string name="action_show_password">パスワードを表示</string>
+    <string name="action_hide_password">パスワードを隠す</string>
+    <string name="theme_title">テーマ</string>
+    <string name="theme_auto">自動（19:00–07:00 はダーク）</string>
+    <string name="theme_light">ライト</string>
+    <string name="theme_dark">ダーク</string>
 </resources>

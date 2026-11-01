@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
     jacoco
 }
 
@@ -53,6 +54,10 @@ android {
         generateLocaleConfig = true
     }
 
+    buildFeatures {
+        compose = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -90,8 +95,10 @@ jacoco {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+    implementation(platform(libs.compose.bom))
+    implementation(libs.compose.material3)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.paho.mqttv3)
 
     testImplementation(libs.junit)
@@ -99,6 +106,10 @@ dependencies {
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.androidx.test.junit)
     testImplementation(libs.mockk)
+    testImplementation(platform(libs.compose.bom))
+    testImplementation(libs.compose.ui.test.junit4)
+    // Host activity for createComposeRule() tests; debug builds only.
+    debugImplementation(libs.compose.ui.test.manifest)
     testImplementation(libs.moquette) {
         // Keep the test broker pure Java: Netty falls back to NIO without these native artifacts.
         exclude(group = "io.netty", module = "netty-transport-native-epoll")
@@ -111,7 +122,7 @@ dependencies {
 
 val mavenCentralMirror = providers.gradleProperty("mavenCentralMirror").orNull
 val screenshots = providers.gradleProperty("screenshots").isPresent
-val screenshotDir = rootDir.resolve("fastlane/metadata/android").absolutePath
+val screenshotRoot = rootDir.absolutePath
 
 tasks.withType<Test>().configureEach {
     // Robolectric fetches android-all jars itself; point it at the optional mirror too.
@@ -126,7 +137,7 @@ tasks.withType<Test>().configureEach {
     // -Pscreenshots renders README screenshots only; they are skipped otherwise.
     if (screenshots) {
         filter.includeTestsMatching("com.mqttabot.screenshots.*")
-        systemProperty("screenshot.dir", screenshotDir)
+        systemProperty("screenshot.root", screenshotRoot)
         outputs.upToDateWhen { false }
     } else {
         filter.excludeTestsMatching("com.mqttabot.screenshots.*")

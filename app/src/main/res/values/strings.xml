@@ -73,4 +73,24 @@
     <string name="tasker_event_hint">Sets %mqtt_topic, %mqtt_payload, %mqtt_qos, %mqtt_retained and %mqtt_received_at. The filter is added to the app\'s subscriptions.</string>
     <string name="tasker_publish_blurb">Publish to %1$s (QoS %2$d)</string>
     <string name="tasker_event_blurb">Message on %1$s</string>
+
+    <string name="section_background">Background activity</string>
+    <string name="background_unrestricted">Unrestricted</string>
+    <string name="background_optimized">Optimized</string>
+    <string name="background_restricted">Restricted</string>
+    <string name="background_hint_ok">Android lets MqttABot keep its connection open in the background.</string>
+    <string name="background_hint_limited">Android may pause the subscription service in the background, so messages and Tasker events can be missed.</string>
+    <string name="action_allow_background">Allow unrestricted</string>
+    <string name="rationale_notifications_title">Notifications are off</string>
+    <string name="rationale_notifications">While the subscription service runs, MqttABot shows an ongoing notification with the connection status and a Stop button. The service keeps running without it, but you won\'t see its status. You can turn notifications on in settings.</string>
+    <string name="rationale_background_title">Background activity is limited</string>
+    <string name="rationale_background">To receive MQTT messages and trigger Tasker while the screen is off, MqttABot keeps a connection open in the background. With battery optimization Android may cut that connection. In settings, set MqttABot\'s battery usage to Unrestricted.</string>
+    <string name="action_open_settings">Open settings</string>
+    <string name="action_not_now">Not now</string>
+    <string name="action_show_password">Show password</string>
+    <string name="action_hide_password">Hide password</string>
+    <string name="theme_title">Theme</string>
+    <string name="theme_auto">Automatic (dark 19:00–07:00)</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
 </resources>

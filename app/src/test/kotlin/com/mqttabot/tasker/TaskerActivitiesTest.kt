@@ -3,12 +3,17 @@ package com.mqttabot.tasker
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.widget.Button
-import android.widget.CompoundButton
-import android.widget.EditText
+import android.os.Bundle
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.android.material.textfield.TextInputLayout
 import com.mqttabot.AppGraph
 import com.mqttabot.R
 import com.mqttabot.data.Subscription
@@ -18,43 +23,57 @@ import com.mqttabot.mqtt.ConnectionStatus
 import com.mqttabot.mqtt.Observable
 import com.mqttabot.testutil.FakeGateway
 import com.mqttabot.testutil.ManualTaskRunner
-import com.mqttabot.ui.QosToggleGroup
+import com.mqttabot.testutil.text
+import com.mqttabot.ui.TAG_FILTER
+import com.mqttabot.ui.TAG_PAYLOAD
+import com.mqttabot.ui.TAG_QOS
+import com.mqttabot.ui.TAG_RETAIN
+import com.mqttabot.ui.TAG_TOPIC
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.Robolectric
-import org.robolectric.Shadows.shadowOf
 
 @RunWith(AndroidJUnit4::class)
 class TaskerActivitiesTest {
+    @get:Rule val compose = createEmptyComposeRule()
+
     private val context = ApplicationProvider.getApplicationContext<Context>()
+    private var scenario: ActivityScenario<out Activity>? = null
+
+    @After
+    fun tearDown() {
+        scenario?.close()
+    }
 
     private inline fun <reified A : Activity> launch(
         action: String,
-        bundle: android.os.Bundle? = null,
-    ): A {
+        bundle: Bundle? = null,
+    ): ActivityScenario<A> {
         val intent = Intent(action).setClass(context, A::class.java)
         bundle?.let { intent.putExtra(TaskerApi.EXTRA_BUNDLE, it) }
-        return Robolectric.buildActivity(A::class.java, intent).setup().get()
+        return ActivityScenario.launchActivityForResult<A>(intent).also { scenario = it }
     }
+
+    private fun node(tag: String) = compose.onNodeWithTag(tag).performScrollTo()
+
+    private fun assertNotFinishing() = scenario!!.onActivity { assertFalse(it.isFinishing) }
 
     @Test
     fun publishActionSavesBundleAndBlurb() {
-        val a = launch<PublishActionActivity>(TaskerApi.ACTION_EDIT_SETTING)
-        a.findViewById<EditText>(R.id.topic_input).setText(" home/%room/cmd ")
-        a.findViewById<EditText>(R.id.payload_input).setText("%par1")
-        a.findViewById<QosToggleGroup>(R.id.qos_group).qos = 2
-        a.findViewById<CompoundButton>(R.id.retain_check).isChecked = true
-        a.findViewById<Button>(R.id.save_button).performClick()
+        val s = launch<PublishActionActivity>(TaskerApi.ACTION_EDIT_SETTING)
+        compose.onNodeWithText(context.getString(R.string.tasker_publish_hint)).assertExists()
+        node(TAG_TOPIC).performTextReplacement(" home/%room/cmd ")
+        node(TAG_PAYLOAD).performTextReplacement("%par1")
+        node("$TAG_QOS-2").performClick()
+        node(TAG_RETAIN).performClick()
+        node(TAG_TASKER_SAVE).performClick()
 
-        val shadow = shadowOf(a)
-        assertTrue(a.isFinishing)
-        assertEquals(Activity.RESULT_OK, shadow.resultCode)
-        val result = shadow.resultIntent
+        assertEquals(Activity.RESULT_OK, s.result.resultCode)
+        val result = s.result.resultData
         assertEquals(
             PublishActionConfig("home/%room/cmd", "%par1", 2, true),
             PublishActionConfig.fromBundle(result.getBundleExtra(TaskerApi.EXTRA_BUNDLE)),
@@ -64,31 +83,30 @@ class TaskerActivitiesTest {
 
     @Test
     fun publishActionPrefillsAndValidates() {
-        val a = launch<PublishActionActivity>(TaskerApi.ACTION_EDIT_SETTING, PublishActionConfig("t", "p", 9, true).toBundle())
-        assertEquals("t", a.findViewById<EditText>(R.id.topic_input).text.toString())
-        assertEquals("p", a.findViewById<EditText>(R.id.payload_input).text.toString())
-        assertEquals(2, a.findViewById<QosToggleGroup>(R.id.qos_group).qos)
-        assertTrue(a.findViewById<CompoundButton>(R.id.retain_check).isChecked)
+        launch<PublishActionActivity>(TaskerApi.ACTION_EDIT_SETTING, PublishActionConfig("t", "p", 9, true).toBundle())
+        assertEquals("t", node(TAG_TOPIC).text())
+        assertEquals("p", node(TAG_PAYLOAD).text())
+        node("$TAG_QOS-2").assertIsOn()
+        node(TAG_RETAIN).assertIsOn()
 
-        a.findViewById<EditText>(R.id.topic_input).setText("bad/#")
-        a.findViewById<Button>(R.id.save_button).performClick()
-        assertFalse(a.isFinishing)
-        assertNotNull(a.findViewById<TextInputLayout>(R.id.topic_layout).error)
+        node(TAG_TOPIC).performTextReplacement("bad/#")
+        node(TAG_TASKER_SAVE).performClick()
+        compose.onNodeWithText(context.getString(R.string.error_topic)).assertExists()
+        assertNotFinishing()
     }
 
     @Test
     fun publishActionCancel() {
-        val a = launch<PublishActionActivity>(TaskerApi.ACTION_EDIT_SETTING)
-        a.findViewById<Button>(R.id.cancel_button).performClick()
-        assertTrue(a.isFinishing)
-        assertEquals(Activity.RESULT_CANCELED, shadowOf(a).resultCode)
+        val s = launch<PublishActionActivity>(TaskerApi.ACTION_EDIT_SETTING)
+        node(TAG_CANCEL).performClick()
+        assertEquals(Activity.RESULT_CANCELED, s.result.resultCode)
     }
 
     @Test
     fun eventConfigSavesAndSubscribes() {
         AppGraph.settings.saveBroker(BrokerConfig(host = "h"))
         val gateway = FakeGateway()
-        val controller =
+        AppGraph.controller =
             ConnectionController(
                 { BrokerConfig(host = "h") },
                 { emptyList() },
@@ -97,18 +115,17 @@ class TaskerActivitiesTest {
                 Observable(ConnectionStatus.DISCONNECTED),
                 {},
             ).also { it.start() }
-        AppGraph.controller = controller
 
-        val a = launch<EventConfigActivity>(TaskerApi.ACTION_EDIT_EVENT)
-        assertEquals(1, a.findViewById<QosToggleGroup>(R.id.qos_group).qos)
-        a.findViewById<EditText>(R.id.filter_input).setText("sensors/+/temp")
-        a.findViewById<EditText>(R.id.pattern_input).setText("^\\d+")
-        a.findViewById<QosToggleGroup>(R.id.qos_group).qos = 2
-        a.findViewById<Button>(R.id.save_button).performClick()
+        val s = launch<EventConfigActivity>(TaskerApi.ACTION_EDIT_EVENT)
+        // New events default to QoS 1.
+        node("$TAG_QOS-1").assertIsOn()
+        node(TAG_FILTER).performTextReplacement("sensors/+/temp")
+        node(TAG_PATTERN).performTextReplacement("^\\d+")
+        node("$TAG_QOS-2").performClick()
+        node(TAG_TASKER_SAVE).performClick()
 
-        val shadow = shadowOf(a)
-        assertEquals(Activity.RESULT_OK, shadow.resultCode)
-        val result = shadow.resultIntent
+        assertEquals(Activity.RESULT_OK, s.result.resultCode)
+        val result = s.result.resultData
         assertEquals(
             EventFilterConfig("sensors/+/temp", "^\\d+", 2),
             EventFilterConfig.fromBundle(result.getBundleExtra(TaskerApi.EXTRA_BUNDLE)),
@@ -123,39 +140,36 @@ class TaskerActivitiesTest {
 
     @Test
     fun eventConfigWithoutServiceStillStoresSubscription() {
-        val a = launch<EventConfigActivity>(TaskerApi.ACTION_EDIT_EVENT, EventFilterConfig("a/#", "x", 7).toBundle())
-        assertEquals("a/#", a.findViewById<EditText>(R.id.filter_input).text.toString())
-        assertEquals("x", a.findViewById<EditText>(R.id.pattern_input).text.toString())
-        assertEquals(2, a.findViewById<QosToggleGroup>(R.id.qos_group).qos)
-        a.findViewById<Button>(R.id.save_button).performClick()
+        launch<EventConfigActivity>(TaskerApi.ACTION_EDIT_EVENT, EventFilterConfig("a/#", "x", 7).toBundle())
+        assertEquals("a/#", node(TAG_FILTER).text())
+        assertEquals("x", node(TAG_PATTERN).text())
+        node("$TAG_QOS-2").assertIsOn()
+        node(TAG_TASKER_SAVE).performClick()
         assertEquals(listOf(Subscription("a/#", 2)), AppGraph.settings.subscriptions())
     }
 
     @Test
     fun eventConfigValidation() {
-        val a = launch<EventConfigActivity>(TaskerApi.ACTION_EDIT_EVENT)
-        val filterLayout = a.findViewById<TextInputLayout>(R.id.filter_layout)
-        val patternLayout = a.findViewById<TextInputLayout>(R.id.pattern_layout)
-        a.findViewById<EditText>(R.id.filter_input).setText("a/#/b")
-        a.findViewById<Button>(R.id.save_button).performClick()
-        assertNotNull(filterLayout.error)
-        assertFalse(a.isFinishing)
+        launch<EventConfigActivity>(TaskerApi.ACTION_EDIT_EVENT)
+        node(TAG_FILTER).performTextReplacement("a/#/b")
+        node(TAG_TASKER_SAVE).performClick()
+        compose.onNodeWithText(context.getString(R.string.error_filter)).assertExists()
+        assertNotFinishing()
 
-        a.findViewById<EditText>(R.id.filter_input).setText("a/#")
-        a.findViewById<EditText>(R.id.pattern_input).setText("[")
-        a.findViewById<Button>(R.id.save_button).performClick()
-        assertNull(filterLayout.error)
-        assertNotNull(patternLayout.error)
-        assertFalse(a.isFinishing)
+        node(TAG_FILTER).performTextReplacement("a/#")
+        node(TAG_PATTERN).performTextReplacement("[")
+        node(TAG_TASKER_SAVE).performClick()
+        compose.onNodeWithText(context.getString(R.string.error_filter)).assertDoesNotExist()
+        compose.onNodeWithText(context.getString(R.string.error_pattern)).assertExists()
+        assertNotFinishing()
         assertTrue(AppGraph.settings.subscriptions().isEmpty())
     }
 
     @Test
     fun eventConfigCancel() {
-        val a = launch<EventConfigActivity>(TaskerApi.ACTION_EDIT_EVENT)
-        a.findViewById<Button>(R.id.cancel_button).performClick()
-        assertEquals(Activity.RESULT_CANCELED, shadowOf(a).resultCode)
-        assertTrue(a.isFinishing)
+        val s = launch<EventConfigActivity>(TaskerApi.ACTION_EDIT_EVENT)
+        node(TAG_CANCEL).performClick()
+        assertEquals(Activity.RESULT_CANCELED, s.result.resultCode)
     }
 
     @Test

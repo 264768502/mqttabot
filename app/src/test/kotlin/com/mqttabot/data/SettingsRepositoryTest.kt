@@ -54,6 +54,20 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun themeModeDefaultsToAutoAndPersists() {
+        val repo = SettingsRepository(context)
+        assertEquals(ThemeMode.AUTO, repo.themeMode)
+        repo.themeMode = ThemeMode.DARK
+        assertEquals(ThemeMode.DARK, SettingsRepository(context).themeMode)
+        context
+            .getSharedPreferences(SettingsRepository.PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putString("theme_mode", "SEPIA")
+            .commit()
+        assertEquals(ThemeMode.AUTO, repo.themeMode)
+    }
+
+    @Test
     fun subscriptionsAddUpdateRemove() {
         val repo = SettingsRepository(context)
         assertEquals(emptyList<Subscription>(), repo.subscriptions())

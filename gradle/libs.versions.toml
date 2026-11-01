@@ -2,8 +2,12 @@
 agp = "9.5.0"
 # Overrides the Kotlin version bundled with AGP's built-in Kotlin support.
 kotlin = "2.4.21"
-appcompat = "1.8.0"
-material = "1.14.0"
+composeBom = "2026.09.00"
+activityCompose = "1.13.0"
+lifecycle = "2.11.0"
+# Ahead of the BOM (1.4.0): the Expressive components (button groups, toggle buttons,
+# loading indicator, flexible app bars) first ship in 1.5.
+material3 = "1.5.0-beta02"
 coreKtx = "1.19.1"
 paho = "1.2.5"
 junit = "4.13.2"
@@ -18,9 +22,13 @@ ktlint = "1.8.0"
 
 [libraries]
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
-material = { module = "com.google.android.material:material", version.ref = "material" }
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
+compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
+compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
+compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 paho-mqttv3 = { module = "org.eclipse.paho:org.eclipse.paho.client.mqttv3", version.ref = "paho" }
 junit = { module = "junit:junit", version.ref = "junit" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
@@ -30,5 +38,6 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 moquette = { module = "io.moquette:moquette-broker", version.ref = "moquette" }
 
 [plugins]
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

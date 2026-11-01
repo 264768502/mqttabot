@@ -3,7 +3,9 @@ package com.mqttabot
 import android.app.Application
 import android.app.Notification
 import android.os.Build
-import android.widget.Button
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.performClick
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mqttabot.mqtt.BrokerConfig
@@ -15,9 +17,12 @@ import com.mqttabot.tasker.TaskerApi
 import com.mqttabot.testutil.FakeGateway
 import com.mqttabot.testutil.FakeTasker
 import com.mqttabot.testutil.ManualTaskRunner
+import com.mqttabot.testutil.onMain
 import com.mqttabot.ui.MainActivity
+import com.mqttabot.ui.TAG_SERVICE
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -28,6 +33,8 @@ import org.robolectric.annotation.Config
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [Build.VERSION_CODES.N])
 class MinSdkCompatTest {
+    @get:Rule val compose = createEmptyComposeRule()
+
     private val app = ApplicationProvider.getApplicationContext<Application>()
 
     @Test
@@ -39,9 +46,11 @@ class MinSdkCompatTest {
         AppGraph.taskRunnerFactory = { ManualTaskRunner() }
 
         // Starting from the UI uses plain startService below API 26.
-        val main = Robolectric.buildActivity(MainActivity::class.java).setup().get()
-        main.findViewById<Button>(R.id.service_button).performClick()
+        // Compose UI (brand colors: no dynamic color before Android 12) on Android 7.
+        val main = ActivityScenario.launch(MainActivity::class.java)
+        compose.onMain(TAG_SERVICE).performClick()
         assertEquals(MqttService.ACTION_START, shadowOf(app).nextStartedService.action)
+        main.close()
 
         val service =
             Robolectric

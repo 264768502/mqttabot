@@ -1,21 +1,37 @@
 package com.mqttabot.ui
 
 import android.Manifest
+import android.app.Activity
+import android.app.ActivityManager
 import android.app.Application
 import android.app.NotificationManager
-import android.view.View
-import android.widget.Button
-import android.widget.CompoundButton
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.content.ComponentName
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.PowerManager
+import android.provider.Settings
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
+import androidx.lifecycle.Lifecycle
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.textfield.TextInputLayout
 import com.mqttabot.AppGraph
 import com.mqttabot.R
 import com.mqttabot.data.Subscription
+import com.mqttabot.data.ThemeMode
 import com.mqttabot.mqtt.BrokerConfig
 import com.mqttabot.mqtt.ConnectionController
 import com.mqttabot.mqtt.ConnectionState
@@ -25,25 +41,30 @@ import com.mqttabot.mqtt.ReceivedMessage
 import com.mqttabot.service.MqttService
 import com.mqttabot.testutil.FakeGateway
 import com.mqttabot.testutil.ManualTaskRunner
+import com.mqttabot.testutil.onMain
+import com.mqttabot.testutil.text
+import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
-import org.robolectric.android.controller.ActivityController
+import org.robolectric.annotation.Config
 import java.io.IOException
 import java.util.concurrent.Executor
 
 @RunWith(AndroidJUnit4::class)
 class MainActivityTest {
+    @get:Rule val compose = createEmptyComposeRule()
+
     private val app = ApplicationProvider.getApplicationContext<Application>()
     private val gateways = mutableListOf<FakeGateway>()
     private var nextGateway: () -> FakeGateway = { FakeGateway() }
     private val pending = mutableListOf<Runnable>()
+    private var scenario: ActivityScenario<MainActivity>? = null
 
     @Before
     fun setUp() {
@@ -52,12 +73,25 @@ class MainActivityTest {
         AppGraph.ioExecutor = Executor { pending += it }
     }
 
-    private fun launch(): ActivityController<MainActivity> = Robolectric.buildActivity(MainActivity::class.java).setup()
+    @After
+    fun tearDown() {
+        scenario?.close()
+    }
+
+    private fun launch(): ActivityScenario<MainActivity> = ActivityScenario.launch(MainActivity::class.java).also { scenario = it }
+
+    private fun activity(): MainActivity {
+        var a: MainActivity? = null
+        scenario!!.onActivity { a = it }
+        return a!!
+    }
 
     private fun runIo() {
         pending.toList().also { pending.clear() }.forEach { it.run() }
-        shadowOf(android.os.Looper.getMainLooper()).idle()
+        compose.waitForIdle()
     }
+
+    private fun string(id: Int) = app.getString(id)
 
     private fun connectedController(gateway: FakeGateway): ConnectionController =
         ConnectionController(
@@ -65,200 +99,302 @@ class MainActivityTest {
             { emptyList() },
             { gateway },
             ManualTaskRunner(),
-            Observable(ConnectionStatus.DISCONNECTED),
+            AppGraph.status,
             {},
         ).also { it.start() }
 
     @Test
-    fun showsBrokerAndStatus() {
-        val a = launch().get()
-        val status = a.findViewById<TextView>(R.id.status_text)
-        val detail = a.findViewById<TextView>(R.id.status_detail)
-        val icon = a.findViewById<View>(R.id.status_icon)
-        val progress = a.findViewById<View>(R.id.status_progress)
-        assertEquals("tcp://broker:1883", a.findViewById<TextView>(R.id.broker_text).text.toString())
-        assertEquals(app.getString(R.string.status_disconnected), status.text.toString())
-        assertEquals(app.getString(R.string.action_start_service), a.findViewById<Button>(R.id.service_button).text.toString())
-        assertEquals(View.VISIBLE, icon.visibility)
-        assertEquals(View.GONE, progress.visibility)
-        assertEquals(View.GONE, detail.visibility)
+    fun showsBrokerAndEveryStatus() {
+        launch()
+        compose.onMain(TAG_BROKER).assertTextEquals("tcp://broker:1883")
+        compose.onMain(TAG_STATUS).assertTextEquals(string(R.string.status_disconnected))
+        compose.onMain(TAG_SERVICE).assertTextEquals(string(R.string.action_start_service))
+        compose.onNodeWithTag(TAG_STATUS_PROGRESS).assertDoesNotExist()
+        compose.onNodeWithTag(TAG_STATUS_DETAIL).assertDoesNotExist()
 
         AppGraph.status.set(ConnectionStatus(ConnectionState.CONNECTING, "x"))
-        assertEquals(app.getString(R.string.state_connecting), status.text.toString())
-        assertEquals(View.INVISIBLE, icon.visibility)
-        assertEquals(View.VISIBLE, progress.visibility)
+        compose.onMain(TAG_STATUS).assertTextEquals(string(R.string.state_connecting))
+        compose.onMain(TAG_STATUS_PROGRESS).assertIsDisplayed()
 
         AppGraph.status.set(ConnectionStatus(ConnectionState.WAITING_RETRY, "boom"))
-        assertEquals(app.getString(R.string.state_reconnecting), status.text.toString())
-        assertEquals(View.VISIBLE, detail.visibility)
-        assertEquals("boom", detail.text.toString())
-        assertEquals(View.VISIBLE, icon.visibility)
-    }
+        compose.onMain(TAG_STATUS).assertTextEquals(string(R.string.state_reconnecting))
+        compose.onMain(TAG_STATUS_DETAIL).assertTextEquals("boom")
+        compose.onNodeWithTag(TAG_STATUS_PROGRESS).assertDoesNotExist()
 
-    @Test
-    fun startServiceRequestsNotificationPermissionWhenNeeded() {
-        val nm = app.getSystemService(NotificationManager::class.java)
-        shadowOf(nm).setNotificationsEnabled(false)
-        val a = launch().get()
-        a.findViewById<Button>(R.id.service_button).performClick()
-        val request = shadowOf(a).lastRequestedPermission
-        assertEquals(listOf(Manifest.permission.POST_NOTIFICATIONS), request.requestedPermissions.toList())
-        assertEquals(MqttService.ACTION_START, shadowOf(app).nextStartedService.action)
+        AppGraph.status.set(ConnectionStatus(ConnectionState.CONNECTED, "u"))
+        compose.onMain(TAG_STATUS).assertTextEquals(string(R.string.state_connected))
     }
 
     @Test
     fun startServiceWithNotificationsEnabled() {
-        val a = launch().get()
-        a.findViewById<Button>(R.id.service_button).performClick()
-        assertNull(shadowOf(a).lastRequestedPermission)
+        launch()
+        compose.onMain(TAG_SERVICE).performClick()
+        assertNull(shadowOf(activity()).lastRequestedPermission)
         assertEquals(MqttService.ACTION_START, shadowOf(app).nextStartedService.action)
     }
 
     @Test
     fun stopServiceWhenRunning() {
         AppGraph.controller = connectedController(FakeGateway())
-        val a = launch().get()
-        assertEquals(app.getString(R.string.action_stop_service), a.findViewById<Button>(R.id.service_button).text.toString())
-        a.findViewById<Button>(R.id.service_button).performClick()
+        launch()
+        compose.onMain(TAG_SERVICE).assertTextEquals(string(R.string.action_stop_service)).performClick()
         assertEquals(MqttService::class.java.name, shadowOf(app).nextStoppedService.component!!.className)
+    }
+
+    @Suppress("DEPRECATION")
+    private fun answerNotificationPermission(result: Int) {
+        val request = shadowOf(activity()).lastRequestedPermission
+        assertEquals(listOf(Manifest.permission.POST_NOTIFICATIONS), request.requestedPermissions.toList())
+        activity().onRequestPermissionsResult(request.requestCode, request.requestedPermissions, intArrayOf(result))
+        compose.waitForIdle()
+    }
+
+    @Test
+    fun deniedNotificationPermissionIsExplained() {
+        shadowOf(app.getSystemService(NotificationManager::class.java)).setNotificationsEnabled(false)
+        launch()
+        compose.onMain(TAG_SERVICE).performClick()
+        // Asked only now, when the service is about to start.
+        answerNotificationPermission(PackageManager.PERMISSION_DENIED)
+        assertEquals(MqttService.ACTION_START, shadowOf(app).nextStartedService.action)
+        compose.onNodeWithText(string(R.string.rationale_notifications_title)).assertIsDisplayed()
+        compose.onNodeWithText(string(R.string.action_open_settings)).performClick()
+        val settings = shadowOf(activity()).nextStartedActivity
+        assertEquals(Settings.ACTION_APP_NOTIFICATION_SETTINGS, settings.action)
+        assertEquals(app.packageName, settings.getStringExtra(Settings.EXTRA_APP_PACKAGE))
+        compose.onNodeWithText(string(R.string.rationale_notifications_title)).assertDoesNotExist()
+    }
+
+    @Test
+    fun grantedNotificationPermissionStartsQuietly() {
+        shadowOf(app.getSystemService(NotificationManager::class.java)).setNotificationsEnabled(false)
+        launch()
+        compose.onMain(TAG_SERVICE).performClick()
+        answerNotificationPermission(PackageManager.PERMISSION_GRANTED)
+        assertEquals(MqttService.ACTION_START, shadowOf(app).nextStartedService.action)
+        compose.onNodeWithText(string(R.string.rationale_notifications_title)).assertDoesNotExist()
+    }
+
+    @Test
+    fun notificationsBlockedInSettingsAreExplained() {
+        shadowOf(app.getSystemService(NotificationManager::class.java)).setNotificationsEnabled(false)
+        shadowOf(app).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        launch()
+        compose.onMain(TAG_SERVICE).performClick()
+        assertNull(shadowOf(activity()).lastRequestedPermission)
+        assertEquals(MqttService.ACTION_START, shadowOf(app).nextStartedService.action)
+        compose.onNodeWithText(string(R.string.action_not_now)).performClick()
+        compose.onNodeWithText(string(R.string.rationale_notifications_title)).assertDoesNotExist()
+        assertNull(shadowOf(activity()).nextStartedActivity)
+    }
+
+    @Test
+    @Config(sdk = [Build.VERSION_CODES.N])
+    fun notificationsOffBeforeAndroid13OpenAppSettings() {
+        shadowOf(app.getSystemService(NotificationManager::class.java)).setNotificationsEnabled(false)
+        launch()
+        compose.onMain(TAG_SERVICE).performClick()
+        assertNull(shadowOf(activity()).lastRequestedPermission)
+        compose.onNodeWithText(string(R.string.action_open_settings)).performClick()
+        assertEquals(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, shadowOf(activity()).nextStartedActivity.action)
+    }
+
+    @Test
+    fun optimizedBackgroundAsksForExemptionAndExplainsRefusal() {
+        launch()
+        compose.onMain(TAG_BACKGROUND).assertTextEquals(string(R.string.background_optimized))
+        compose.onMain(TAG_ALLOW_BACKGROUND).performClick()
+        val request = shadowOf(activity()).nextStartedActivityForResult
+        assertEquals(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, request.intent.action)
+        assertEquals("package:${app.packageName}", request.intent.dataString)
+
+        // The user declined in the system dialog.
+        shadowOf(activity()).receiveResult(request.intent, Activity.RESULT_CANCELED, null)
+        compose.onNodeWithText(string(R.string.rationale_background_title)).assertIsDisplayed()
+        compose.onNodeWithText(string(R.string.action_open_settings)).performClick()
+        val retry = shadowOf(activity()).nextStartedActivityForResult
+        assertEquals(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, retry.intent.action)
+
+        // This time the user allowed it.
+        shadowOf(app.getSystemService(PowerManager::class.java)).setIgnoringBatteryOptimizations(app.packageName, true)
+        shadowOf(activity()).receiveResult(retry.intent, Activity.RESULT_OK, null)
+        compose.onNodeWithText(string(R.string.rationale_background_title)).assertDoesNotExist()
+        compose.onMain(TAG_BACKGROUND).assertTextEquals(string(R.string.background_unrestricted))
+        compose.onNodeWithTag(TAG_ALLOW_BACKGROUND).assertDoesNotExist()
+    }
+
+    @Test
+    fun restrictedBackgroundOpensAppSettings() {
+        shadowOf(app.getSystemService(ActivityManager::class.java)).setBackgroundRestricted(true)
+        launch()
+        compose.onMain(TAG_BACKGROUND).assertTextEquals(string(R.string.background_restricted))
+        compose.onMain(TAG_ALLOW_BACKGROUND).performClick()
+        assertEquals(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, shadowOf(activity()).nextStartedActivityForResult.intent.action)
+    }
+
+    @Test
+    fun missingExemptionDialogFallsBackToAppSettings() {
+        val settings = ComponentName("com.android.settings", "AppInfo")
+        shadowOf(app.packageManager).addActivityIfNotPresent(settings)
+        shadowOf(app.packageManager).addIntentFilterForActivity(
+            settings,
+            IntentFilter(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                addCategory(Intent.CATEGORY_DEFAULT)
+                addDataScheme("package")
+            },
+        )
+        shadowOf(app).checkActivities(true)
+        launch()
+        compose.onMain(TAG_ALLOW_BACKGROUND).performClick()
+        assertEquals(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, shadowOf(activity()).nextStartedActivityForResult.intent.action)
+    }
+
+    @Test
+    fun backgroundModeRefreshesOnResume() {
+        launch()
+        compose.onMain(TAG_BACKGROUND).assertTextEquals(string(R.string.background_optimized))
+        scenario!!.moveToState(Lifecycle.State.STARTED)
+        shadowOf(app.getSystemService(PowerManager::class.java)).setIgnoringBatteryOptimizations(app.packageName, true)
+        scenario!!.moveToState(Lifecycle.State.RESUMED)
+        compose.onMain(TAG_BACKGROUND).assertTextEquals(string(R.string.background_unrestricted))
     }
 
     @Test
     fun publishSuccessAndFailure() {
-        val a = launch().get()
-        a.findViewById<EditText>(R.id.topic_input).setText(" a/b ")
-        a.findViewById<EditText>(R.id.payload_input).setText("hello")
-        a.findViewById<QosToggleGroup>(R.id.qos_group).qos = 1
-        a.findViewById<CompoundButton>(R.id.retain_check).isChecked = true
-        val send = a.findViewById<Button>(R.id.send_button)
-        val result = a.findViewById<TextView>(R.id.publish_result)
-        assertEquals(View.GONE, result.visibility)
-        send.performClick()
-        assertEquals(false, send.isEnabled)
-        assertEquals(View.VISIBLE, result.visibility)
-        assertEquals(app.getString(R.string.publish_sending), result.text.toString())
+        launch()
+        compose.onMain(TAG_TOPIC).performTextReplacement(" a/b ")
+        compose.onMain(TAG_PAYLOAD).performTextReplacement("hello")
+        compose.onMain("$TAG_QOS-1").performClick()
+        compose.onMain(TAG_RETAIN).performClick().assertIsOn()
+        compose.onNodeWithTag(TAG_PUBLISH_RESULT).assertDoesNotExist()
+        compose.onMain(TAG_SEND).performClick().assertIsNotEnabled()
+        compose.onMain(TAG_PUBLISH_RESULT).assertTextEquals(string(R.string.publish_sending))
         runIo()
-        assertTrue(send.isEnabled)
-        assertEquals(app.getString(R.string.publish_ok, "a/b"), result.text.toString())
+        compose.onMain(TAG_SEND).assertIsEnabled()
+        compose.onMain(TAG_PUBLISH_RESULT).assertTextEquals(app.getString(R.string.publish_ok, "a/b"))
         assertEquals(listOf(FakeGateway.Published("a/b", "hello", 1, true)), gateways.single().published)
 
         nextGateway = { FakeGateway(connectError = IOException("refused")) }
-        send.performClick()
+        compose.onMain(TAG_SEND).performClick()
         runIo()
-        assertTrue(result.text.toString().contains("refused"))
+        assertTrue(compose.onMain(TAG_PUBLISH_RESULT).text().contains("refused"))
     }
 
     @Test
     fun publishValidatesTopic() {
-        val a = launch().get()
-        val layout = a.findViewById<TextInputLayout>(R.id.topic_layout)
-        a.findViewById<EditText>(R.id.topic_input).setText("a/+")
-        a.findViewById<Button>(R.id.send_button).performClick()
-        assertNotNull(layout.error)
+        launch()
+        compose.onMain(TAG_TOPIC).performTextReplacement("a/+")
+        compose.onMain(TAG_SEND).performClick()
+        compose.onNodeWithTag(TAG_PUBLISH_RESULT).assertDoesNotExist()
+        compose.onNodeWithText(string(R.string.error_topic)).assertExists()
         assertTrue(pending.isEmpty())
-        a.findViewById<EditText>(R.id.topic_input).setText("a")
-        a.findViewById<Button>(R.id.send_button).performClick()
-        assertNull(layout.error)
+        compose.onMain(TAG_TOPIC).performTextReplacement("a")
+        compose.onMain(TAG_SEND).performClick()
+        compose.onNodeWithText(string(R.string.error_topic)).assertDoesNotExist()
+        assertEquals(1, pending.size)
     }
 
     @Test
     fun addAndRemoveSubscriptions() {
         val gateway = FakeGateway()
         AppGraph.controller = connectedController(gateway)
-        val a = launch().get()
-        val container = a.findViewById<LinearLayout>(R.id.subscriptions_container)
-        val empty = a.findViewById<TextView>(R.id.no_subscriptions)
-        assertEquals(View.VISIBLE, empty.visibility)
+        launch()
+        compose.onMain(TAG_NO_SUBSCRIPTIONS).assertIsDisplayed()
 
-        val filterLayout = a.findViewById<TextInputLayout>(R.id.filter_layout)
-        a.findViewById<EditText>(R.id.filter_input).setText("bad#")
-        a.findViewById<Button>(R.id.add_subscription_button).performClick()
-        assertNotNull(filterLayout.error)
+        compose.onMain(TAG_FILTER).performTextReplacement("bad#")
+        compose.onMain(TAG_ADD_SUBSCRIPTION).performClick()
+        compose.onNodeWithText(string(R.string.error_filter)).assertExists()
 
-        a.findViewById<EditText>(R.id.filter_input).setText("home/#")
-        a.findViewById<QosToggleGroup>(R.id.filter_qos_group).qos = 2
-        a.findViewById<Button>(R.id.add_subscription_button).performClick()
-        assertNull(filterLayout.error)
-        assertEquals("", a.findViewById<EditText>(R.id.filter_input).text.toString())
+        compose.onMain(TAG_FILTER).performTextReplacement("home/#")
+        compose.onMain("$TAG_FILTER_QOS-2").performClick().assertIsOn()
+        compose.onMain(TAG_ADD_SUBSCRIPTION).performClick()
+        compose.onNodeWithText(string(R.string.error_filter)).assertDoesNotExist()
+        assertEquals("", compose.onMain(TAG_FILTER).text())
         assertEquals(listOf(Subscription("home/#", 2)), AppGraph.settings.subscriptions())
         assertEquals("home/#" to 2, gateway.subscriptions.last())
-        assertEquals(1, container.childCount)
-        assertEquals(View.GONE, empty.visibility)
-        val row = container.getChildAt(0)
-        assertEquals("home/#", row.findViewById<TextView>(R.id.subscription_text).text.toString())
-        assertEquals(app.getString(R.string.qos_value, 2), row.findViewById<TextView>(R.id.subscription_qos).text.toString())
+        compose.onNodeWithTag(TAG_NO_SUBSCRIPTIONS).assertDoesNotExist()
+        compose.onMain(TAG_SUBSCRIPTION).assertIsDisplayed()
+        compose.onNodeWithText("home/#").assertExists()
+        compose.onNodeWithText(app.getString(R.string.qos_value, 2)).assertExists()
 
-        container.getChildAt(0).findViewById<Button>(R.id.remove_button).performClick()
+        compose.onMain(TAG_REMOVE_SUBSCRIPTION).performClick()
         assertTrue(AppGraph.settings.subscriptions().isEmpty())
         assertEquals(listOf("home/#"), gateway.unsubscriptions)
-        assertEquals(0, container.childCount)
+        compose.onNodeWithTag(TAG_SUBSCRIPTION).assertDoesNotExist()
     }
 
     @Test
     fun subscriptionsWithoutRunningService() {
         AppGraph.settings.addSubscription(Subscription("x", 0))
-        val a = launch().get()
-        val container = a.findViewById<LinearLayout>(R.id.subscriptions_container)
-        assertEquals(1, container.childCount)
-        a.findViewById<EditText>(R.id.filter_input).setText("y")
-        a.findViewById<Button>(R.id.add_subscription_button).performClick()
-        container.getChildAt(0).findViewById<Button>(R.id.remove_button).performClick()
+        launch()
+        compose.onMain(TAG_SUBSCRIPTION).assertIsDisplayed()
+        compose.onMain(TAG_FILTER).performTextReplacement("y")
+        compose.onMain(TAG_ADD_SUBSCRIPTION).performClick()
+        compose.onAllNodesWithTag(TAG_REMOVE_SUBSCRIPTION)[0].performClick()
         assertEquals(listOf(Subscription("y", 0)), AppGraph.settings.subscriptions())
     }
 
+    // Tall window so every lazy row is composed.
     @Test
+    @Config(qualifiers = "h2000dp")
     fun messagesRenderAndClear() {
-        val a = launch().get()
-        val list = a.findViewById<LinearLayout>(R.id.messages_container)
-        val empty = a.findViewById<TextView>(R.id.no_messages)
-
-        fun text(
-            row: Int,
-            id: Int,
-        ) = list
-            .getChildAt(row)
-            .findViewById<TextView>(id)
-            .text
-            .toString()
-        assertEquals(View.VISIBLE, empty.visibility)
-        assertEquals(0, list.childCount)
+        launch()
+        compose.onMain(TAG_NO_MESSAGES).assertIsDisplayed()
         AppGraph.messageLog.add(ReceivedMessage("t/1", "payload-1", 1, false, 0))
         AppGraph.messageLog.add(ReceivedMessage("t/2", "payload-2", 0, false, 0))
-        assertEquals(View.GONE, empty.visibility)
-        assertEquals(2, list.childCount)
-        assertEquals("t/2", text(0, R.id.message_topic))
-        assertEquals("t/1", text(1, R.id.message_topic))
-        assertEquals("payload-1", text(1, R.id.message_payload))
-        assertTrue(text(1, R.id.message_meta).endsWith("QoS 1"))
-        a.findViewById<Button>(R.id.clear_messages_button).performClick()
-        assertEquals(View.VISIBLE, empty.visibility)
-        assertEquals(0, list.childCount)
+        compose.onNodeWithTag(TAG_NO_MESSAGES).assertDoesNotExist()
+        val rows = compose.onAllNodesWithTag(TAG_MESSAGE, useUnmergedTree = true)
+        assertEquals(2, rows.fetchSemanticsNodes().size)
+        compose.onNodeWithText("payload-1").assertExists()
+        compose.onNodeWithText("t/2").assertExists()
+        compose.onMain(TAG_CLEAR_MESSAGES).performClick()
+        compose.onMain(TAG_NO_MESSAGES).assertIsDisplayed()
+        compose.onNodeWithTag(TAG_MESSAGE).assertDoesNotExist()
     }
 
     @Test
+    @Config(qualifiers = "h2000dp")
     fun listenersDetachOnStop() {
-        val controller = launch()
-        val a = controller.get()
-        controller.pause().stop()
+        launch()
+        scenario!!.moveToState(Lifecycle.State.CREATED)
         AppGraph.messageLog.add(ReceivedMessage("t", "p", 0, false, 0))
-        assertEquals(0, a.findViewById<LinearLayout>(R.id.messages_container).childCount)
+        scenario!!.moveToState(Lifecycle.State.RESUMED)
+        // Re-attaching on start delivers the current log.
+        compose.onNodeWithText("p").assertExists()
     }
 
     @Test
     fun opensBrokerSettings() {
-        val a = launch().get()
-        a.findViewById<MaterialToolbar>(R.id.toolbar).menu.performIdentifierAction(R.id.action_broker_settings, 0)
-        assertEquals(BrokerSettingsActivity::class.java.name, shadowOf(a).nextStartedActivity.component!!.className)
+        launch()
+        compose.onNodeWithTag(TAG_SETTINGS).performClick()
+        assertEquals(BrokerSettingsActivity::class.java.name, shadowOf(activity()).nextStartedActivity.component!!.className)
     }
 
     @Test
-    fun qosSelectionSurvivesRecreation() {
-        val controller = launch()
-        controller.get().findViewById<QosToggleGroup>(R.id.qos_group).qos = 2
-        controller.get().findViewById<QosToggleGroup>(R.id.filter_qos_group).qos = 9
-        controller.recreate()
-        val a = controller.get()
-        assertEquals(2, a.findViewById<QosToggleGroup>(R.id.qos_group).qos)
-        assertEquals(2, a.findViewById<QosToggleGroup>(R.id.filter_qos_group).qos)
+    fun choosesTheme() {
+        launch()
+        compose.onNodeWithTag(TAG_THEME).performClick()
+        compose.onNodeWithTag("$TAG_THEME_OPTION-${ThemeMode.AUTO.name}").assertIsSelected()
+        compose.onNodeWithTag("$TAG_THEME_OPTION-${ThemeMode.DARK.name}").performClick()
+        assertEquals(ThemeMode.DARK, AppGraph.themeMode.value)
+        assertEquals(ThemeMode.DARK, AppGraph.settings.themeMode)
+        compose.onNodeWithText(string(R.string.theme_title)).assertDoesNotExist()
+
+        compose.onNodeWithTag(TAG_THEME).performClick()
+        compose.onNodeWithText(string(R.string.action_cancel)).performClick()
+        compose.onNodeWithText(string(R.string.theme_title)).assertDoesNotExist()
+        assertEquals(ThemeMode.DARK, AppGraph.themeMode.value)
+    }
+
+    @Test
+    fun formStateSurvivesRecreation() {
+        launch()
+        compose.onMain(TAG_TOPIC).performTextReplacement("kept/topic")
+        compose.onMain("$TAG_QOS-2").performClick()
+        compose.onMain("$TAG_FILTER_QOS-1").performClick()
+        scenario!!.recreate()
+        assertEquals("kept/topic", compose.onMain(TAG_TOPIC).text())
+        compose.onMain("$TAG_QOS-2").assertIsOn()
+        compose.onMain("$TAG_FILTER_QOS-1").assertIsOn()
     }
 }

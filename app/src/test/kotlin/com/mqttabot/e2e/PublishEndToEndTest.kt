@@ -2,10 +2,12 @@ package com.mqttabot.e2e
 
 import android.app.Application
 import android.content.Intent
-import android.widget.Button
-import android.widget.CompoundButton
-import android.widget.EditText
-import android.widget.TextView
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mqttabot.AppGraph
@@ -14,21 +16,29 @@ import com.mqttabot.mqtt.BrokerConfig
 import com.mqttabot.mqtt.ConnectionState
 import com.mqttabot.service.MqttService
 import com.mqttabot.tasker.PublishActionActivity
+import com.mqttabot.tasker.TAG_TASKER_SAVE
 import com.mqttabot.tasker.TaskerApi
 import com.mqttabot.testutil.EmbeddedBroker
 import com.mqttabot.testutil.FakeTasker
 import com.mqttabot.testutil.TestClient
 import com.mqttabot.testutil.awaitUntil
+import com.mqttabot.testutil.onMain
+import com.mqttabot.testutil.text
 import com.mqttabot.ui.MainActivity
-import com.mqttabot.ui.QosToggleGroup
+import com.mqttabot.ui.TAG_PAYLOAD
+import com.mqttabot.ui.TAG_PUBLISH_RESULT
+import com.mqttabot.ui.TAG_QOS
+import com.mqttabot.ui.TAG_RETAIN
+import com.mqttabot.ui.TAG_SEND
+import com.mqttabot.ui.TAG_TOPIC
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
-import org.robolectric.Shadows.shadowOf
 
 /**
  * End-to-end: sending messages. Real Paho client in the app, real MQTT broker (with
@@ -36,6 +46,8 @@ import org.robolectric.Shadows.shadowOf
  */
 @RunWith(AndroidJUnit4::class)
 class PublishEndToEndTest {
+    @get:Rule val compose = createEmptyComposeRule()
+
     private val app = ApplicationProvider.getApplicationContext<Application>()
     private val broker = EmbeddedBroker(USER, PASS).start()
     private val observer = TestClient(broker.port, USER, PASS).apply { subscribe("home/#", 2) }
@@ -60,18 +72,14 @@ class PublishEndToEndTest {
     fun taskerActionPublishesToBroker() {
         // 1. Tasker opens the plugin's edit screen; the user configures the action.
         val edit =
-            Robolectric
-                .buildActivity(
-                    PublishActionActivity::class.java,
-                    Intent(TaskerApi.ACTION_EDIT_SETTING).setClass(app, PublishActionActivity::class.java),
-                ).setup()
-                .get()
-        edit.findViewById<EditText>(R.id.topic_input).setText("home/%room/light")
-        edit.findViewById<EditText>(R.id.payload_input).setText("%state")
-        edit.findViewById<QosToggleGroup>(R.id.qos_group).qos = 1
-        edit.findViewById<CompoundButton>(R.id.retain_check).isChecked = false
-        edit.findViewById<Button>(R.id.save_button).performClick()
-        val stored = shadowOf(edit).resultIntent.getBundleExtra(TaskerApi.EXTRA_BUNDLE)!!
+            ActivityScenario.launchActivityForResult<PublishActionActivity>(
+                Intent(TaskerApi.ACTION_EDIT_SETTING).setClass(app, PublishActionActivity::class.java),
+            )
+        compose.onNodeWithTag(TAG_TOPIC).performTextReplacement("home/%room/light")
+        compose.onNodeWithTag(TAG_PAYLOAD).performTextReplacement("%state")
+        compose.onNodeWithTag("$TAG_QOS-1").performScrollTo().performClick()
+        compose.onNodeWithTag(TAG_TASKER_SAVE).performScrollTo().performClick()
+        val stored = edit.result.resultData.getBundleExtra(TaskerApi.EXTRA_BUNDLE)!!
 
         // 2. When the task runs, Tasker substitutes variables and fires the action.
         tasker.fireAction(tasker.substitute(stored, mapOf("%room" to "kitchen", "%state" to "ON")))
@@ -94,21 +102,22 @@ class PublishEndToEndTest {
                 .startCommand(0, 1)
         awaitUntil(message = "service connected") { AppGraph.status.value.state == ConnectionState.CONNECTED }
 
-        val main = Robolectric.buildActivity(MainActivity::class.java).setup().get()
-        main.findViewById<EditText>(R.id.topic_input).setText("home/garage/door")
-        main.findViewById<EditText>(R.id.payload_input).setText("close")
-        main.findViewById<QosToggleGroup>(R.id.qos_group).qos = 2
-        main.findViewById<CompoundButton>(R.id.retain_check).isChecked = true
-        main.findViewById<Button>(R.id.send_button).performClick()
+        val main = ActivityScenario.launch(MainActivity::class.java)
+        compose.onMain(TAG_TOPIC).performTextReplacement("home/garage/door")
+        compose.onMain(TAG_PAYLOAD).performTextReplacement("close")
+        compose.onMain("$TAG_QOS-2").performClick()
+        compose.onMain(TAG_RETAIN).performClick()
+        compose.onMain(TAG_SEND).performClick()
 
-        val result = main.findViewById<TextView>(R.id.publish_result)
-        awaitUntil(message = "publish result") { result.text.toString() == app.getString(R.string.publish_ok, "home/garage/door") }
+        val ok = app.getString(R.string.publish_ok, "home/garage/door")
+        awaitUntil(message = "publish result") { compose.onMain(TAG_PUBLISH_RESULT).text() == ok }
         val (topic, message) = observer.await()
         assertEquals("home/garage/door", topic)
         assertEquals("close", String(message.payload))
         assertEquals(2, message.qos)
         // Only the service's client (plus our observer) ever connected: no one-shot connection was needed.
         assertEquals(setOf("mqttabot-e2e"), broker.connectedClientIds().filterNot { it.startsWith("test-") }.toSet())
+        main.close()
         service.destroy()
     }
 

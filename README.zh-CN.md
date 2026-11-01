@@ -23,6 +23,7 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 
 - 最低支持 Android 7.0（API 24），目标版本 Android 16（API 36），编译 SDK 37
 - MQTT 库：Eclipse Paho `mqttv3`（纯 Java）
+- 界面：Jetpack Compose + Material 3 Expressive（`material3` 1.5）
 - 构建：Gradle 9.8 + AGP 9.5（内置 Kotlin）
 
 ## 安装
@@ -45,6 +46,12 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 | :---: | :---: | :---: | :---: |
 | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/1_main.png" width="200" alt="主界面"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/2_messages.png" width="200" alt="消息"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/3_broker_settings.png" width="200" alt="服务器设置"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/4_tasker_event.png" width="200" alt="Tasker 事件配置"> |
 
+深色主题：
+
+| | | | |
+| :---: | :---: | :---: | :---: |
+| <img src="docs/screenshots/dark/1_main.png" width="200" alt="主界面（深色）"> | <img src="docs/screenshots/dark/2_messages.png" width="200" alt="消息（深色）"> | <img src="docs/screenshots/dark/3_broker_settings.png" width="200" alt="服务器设置（深色）"> | <img src="docs/screenshots/dark/4_tasker_event.png" width="200" alt="Tasker 事件（深色）"> |
+
 ## 功能
 
 | 功能 | 说明 |
@@ -54,7 +61,10 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 | 内置服务器 | test.mosquitto.org（TCP / TLS / 带认证 1884）、broker.hivemq.com、broker.emqx.io、mqtt.eclipseprojects.io（TCP 与 TLS），也可自定义；支持用户名、密码、Client ID、Keep-alive、Clean session。 |
 | Tasker 动作 | “MqttABot: Publish”——在 Tasker 中发送 MQTT 消息，topic 与 payload 支持 Tasker `%变量`。 |
 | Tasker 事件 | “MqttABot: Message received”——订阅到的消息作为 Tasker 触发器，支持 topic 通配符（`+`、`#`）和可选的 payload 正则。保存时自动把过滤器加入订阅列表。 |
-| 界面 | Material 3 Expressive 设计：Android 12+ 跟随壁纸动态取色（其他版本使用品牌紫色），支持浅色/深色主题、全面屏（edge-to-edge）布局、可折叠顶部栏、QoS 连接按钮组；平板和横屏时内容居中显示。 |
+| 界面 | Jetpack Compose，Material 3 Expressive 设计：Android 12+ 跟随壁纸动态取色（其他版本使用品牌紫色），全面屏（edge-to-edge）布局、可折叠顶部栏、QoS 连接按钮组；平板和横屏时内容居中显示。 |
+| 主题 | 自动（07:00–19:00 浅色，其余时间深色，到点实时切换），或始终浅色 / 始终深色；在顶部栏选择。 |
+| 后台活动 | 主界面显示本应用的电池用量设置（不受限制 / 已优化 / 受限），并直达对应的系统界面以允许不受限制的后台活动，保证熄屏时订阅不中断。 |
+| 权限 | 仅在需要时申请：启动服务时申请通知权限（Android 13+）。用户拒绝后，应用会说明为什么需要该权限，并提供跳转到系统设置的入口。 |
 | 多语言 | 英文、简体中文、繁体中文、西班牙文、德文、韩文和日文。自动跟随系统语言，不支持的语言显示英文；Android 13+ 还可以在系统设置中单独为本应用选择语言。 |
 
 ### Tasker 使用
@@ -83,14 +93,14 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 ./gradlew testDebugUnitTest                     # 全部 JVM 测试（单元 + 端到端）
 ./gradlew jacocoUnitTestCoverageVerification -PskipE2e   # 只用单元测试验证 100% 覆盖率
 ./gradlew testDebugUnitTest --tests 'com.mqttabot.e2e.*'  # 只运行端到端测试
-./gradlew testDebugUnitTest -Pscreenshots               # 重新生成 fastlane/ 中的截图和图标
+./gradlew testDebugUnitTest -Pscreenshots               # 重新生成 fastlane/ 和 docs/screenshots/dark/ 中的截图和图标
 ```
 
 覆盖率报告：`app/build/reports/jacoco/jacocoUnitTestReport/html/index.html`。门禁要求指令、分支、行、方法、类覆盖率均为 100%（仅排除生成的 `R`/`BuildConfig`）。
 
 ### 测试说明
 
-- 单元测试使用 JUnit4 + Robolectric（默认 API 36，`MinSdkCompatTest` 在 API 24 上运行主要流程）+ MockK。
+- 单元测试使用 JUnit4 + Robolectric（默认 API 36，`MinSdkCompatTest` 在 API 24 上运行主要流程）+ MockK；界面通过 Compose UI 测试 API（`createEmptyComposeRule` + `ActivityScenario`）驱动。
 - 端到端测试（`app/src/test/kotlin/com/mqttabot/e2e/`）在进程内启动真实 MQTT broker（Moquette，已排除其原生依赖，纯 Java/NIO），App 内使用真实的 Paho 客户端与网络连接，`FakeTasker` 按 Tasker 的协议驱动插件：
   - `PublishEndToEndTest`：通过 Tasker 编辑界面配置动作 → 变量替换 → `FIRE_SETTING` → broker → 独立订阅者收到消息；以及主界面经订阅服务长连接发送。
   - `SubscribeEndToEndTest`：通过 Tasker 编辑界面配置事件 → 启动前台服务 → 其他客户端发布消息 → `REQUEST_QUERY` → `QUERY_CONDITION` 返回满足条件及变量；验证 broker 断线后自动重连、重新订阅。

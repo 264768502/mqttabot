@@ -1,38 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Material 3 "content" scheme from seed #6A1B9A (dark); used where dynamic color is unavailable. -->
-    <color name="md_primary">#FFE4B5FF</color>
-    <color name="md_on_primary">#FF4E0078</color>
-    <color name="md_primary_container">#FF6A1B9A</color>
-    <color name="md_on_primary_container">#FFDA9CFF</color>
-    <color name="md_inverse_primary">#FF843AB4</color>
-    <color name="md_secondary">#FFDEB9F1</color>
-    <color name="md_on_secondary">#FF402452</color>
-    <color name="md_secondary_container">#FF5A3D6C</color>
-    <color name="md_on_secondary_container">#FFCFABE2</color>
-    <color name="md_tertiary">#FFFFAFD2</color>
-    <color name="md_on_tertiary">#FF63003F</color>
-    <color name="md_tertiary_container">#FF861058</color>
-    <color name="md_on_tertiary_container">#FFFF92C5</color>
-    <color name="md_error">#FFFFB4AB</color>
-    <color name="md_on_error">#FF690005</color>
-    <color name="md_error_container">#FF93000A</color>
-    <color name="md_on_error_container">#FFFFDAD6</color>
-    <color name="md_background">#FF171219</color>
-    <color name="md_on_background">#FFEADFEA</color>
-    <color name="md_surface">#FF171219</color>
-    <color name="md_on_surface">#FFEADFEA</color>
-    <color name="md_surface_variant">#FF4D4351</color>
-    <color name="md_on_surface_variant">#FFD0C2D3</color>
-    <color name="md_inverse_surface">#FFEADFEA</color>
-    <color name="md_inverse_on_surface">#FF342E37</color>
-    <color name="md_outline">#FF998D9D</color>
-    <color name="md_outline_variant">#FF4D4351</color>
-    <color name="md_surface_bright">#FF3D373F</color>
-    <color name="md_surface_dim">#FF171219</color>
-    <color name="md_surface_container_lowest">#FF110C14</color>
-    <color name="md_surface_container_low">#FF1F1A21</color>
-    <color name="md_surface_container">#FF231E25</color>
-    <color name="md_surface_container_high">#FF2E2830</color>
-    <color name="md_surface_container_highest">#FF39333B</color>
+    <color name="window_background">#FF171219</color>
 </resources>

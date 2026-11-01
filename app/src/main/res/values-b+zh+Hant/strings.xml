@@ -62,4 +62,24 @@
     <string name="tasker_event_hint">設定變數 %mqtt_topic、%mqtt_payload、%mqtt_qos、%mqtt_retained 和 %mqtt_received_at。此篩選器會自動加入應用程式的訂閱清單。</string>
     <string name="tasker_publish_blurb">發佈至 %1$s（QoS %2$d）</string>
     <string name="tasker_event_blurb">%1$s 上的訊息</string>
+
+    <string name="section_background">背景活動</string>
+    <string name="background_unrestricted">不受限制</string>
+    <string name="background_optimized">最佳化</string>
+    <string name="background_restricted">受限</string>
+    <string name="background_hint_ok">Android 允許 MqttABot 在背景保持連線。</string>
+    <string name="background_hint_limited">Android 可能會在背景暫停訂閱服務，導致漏收訊息和 Tasker 事件。</string>
+    <string name="action_allow_background">允許不受限制</string>
+    <string name="rationale_notifications_title">通知已關閉</string>
+    <string name="rationale_notifications">訂閱服務執行時，MqttABot 會顯示一則常駐通知，顯示連線狀態並提供「停止」按鈕。沒有通知服務也會繼續執行，但你將看不到它的狀態。可以在設定中開啟通知。</string>
+    <string name="rationale_background_title">背景活動受限</string>
+    <string name="rationale_background">為了在螢幕關閉時也能接收 MQTT 訊息並觸發 Tasker，MqttABot 需要在背景保持連線。啟用電池最佳化後，Android 可能會中斷該連線。請在設定中將 MqttABot 的電池用量設為「不受限制」。</string>
+    <string name="action_open_settings">開啟設定</string>
+    <string name="action_not_now">暫不</string>
+    <string name="action_show_password">顯示密碼</string>
+    <string name="action_hide_password">隱藏密碼</string>
+    <string name="theme_title">主題</string>
+    <string name="theme_auto">自動（19:00–07:00 深色）</string>
+    <string name="theme_light">淺色</string>
+    <string name="theme_dark">深色</string>
 </resources>

@@ -8,6 +8,7 @@ import android.content.pm.ServiceInfo
 import androidx.core.app.ServiceCompat
 import com.mqttabot.data.MessageLog
 import com.mqttabot.data.SettingsRepository
+import com.mqttabot.data.ThemeMode
 import com.mqttabot.mqtt.ConnectionController
 import com.mqttabot.mqtt.ConnectionStatus
 import com.mqttabot.mqtt.ExecutorTaskRunner
@@ -31,6 +32,9 @@ object AppGraph {
     val status = Observable(ConnectionStatus.DISCONNECTED)
     val messageLog = MessageLog()
 
+    /** Current appearance; persisted by [setThemeMode]. */
+    val themeMode = Observable(ThemeMode.AUTO)
+
     @Volatile var gatewayFactory: () -> MqttGateway = defaultGatewayFactory
 
     @Volatile var taskRunnerFactory: () -> TaskRunner = defaultTaskRunnerFactory
@@ -42,6 +46,9 @@ object AppGraph {
     /** Use wallpaper colors where available; screenshots turn this off to show the brand colors. */
     @Volatile var dynamicColor = true
 
+    /** Wall-clock time for the automatic theme. */
+    @Volatile var clock: () -> Long = System::currentTimeMillis
+
     /** Live connection owned by the running MqttService, if any. */
     @Volatile var controller: ConnectionController? = null
 
@@ -52,11 +59,19 @@ object AppGraph {
         ioExecutor = defaultIoExecutor
         foregroundStarter = ::startForegroundSpecialUse
         dynamicColor = true
+        clock = System::currentTimeMillis
+        themeMode.clearListeners()
+        themeMode.set(settings.themeMode)
         controller = null
         status.clearListeners()
         status.set(ConnectionStatus.DISCONNECTED)
         messageLog.updates.clearListeners()
         messageLog.clear()
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        settings.themeMode = mode
+        themeMode.set(mode)
     }
 
     fun publisher() = MqttPublisher({ settings.loadBroker() }, gatewayFactory, { controller?.activeGateway })

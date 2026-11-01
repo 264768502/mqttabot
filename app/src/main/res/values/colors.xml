@@ -1,39 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Material 3 "content" scheme from seed #6A1B9A (light); used where dynamic color is unavailable. -->
     <color name="launcher_background">#FF6A1B9A</color>
-    <color name="md_primary">#FF4E0078</color>
-    <color name="md_on_primary">#FFFFFFFF</color>
-    <color name="md_primary_container">#FF6A1B9A</color>
-    <color name="md_on_primary_container">#FFDA9CFF</color>
-    <color name="md_inverse_primary">#FFE4B5FF</color>
-    <color name="md_secondary">#FF715283</color>
-    <color name="md_on_secondary">#FFFFFFFF</color>
-    <color name="md_secondary_container">#FFECC7FF</color>
-    <color name="md_on_secondary_container">#FF6E5080</color>
-    <color name="md_tertiary">#FF62003E</color>
-    <color name="md_on_tertiary">#FFFFFFFF</color>
-    <color name="md_tertiary_container">#FF861058</color>
-    <color name="md_on_tertiary_container">#FFFF92C5</color>
-    <color name="md_error">#FFBA1A1A</color>
-    <color name="md_on_error">#FFFFFFFF</color>
-    <color name="md_error_container">#FFFFDAD6</color>
-    <color name="md_on_error_container">#FF93000A</color>
-    <color name="md_background">#FFFFF7FC</color>
-    <color name="md_on_background">#FF1F1A21</color>
-    <color name="md_surface">#FFFFF7FC</color>
-    <color name="md_on_surface">#FF1F1A21</color>
-    <color name="md_surface_variant">#FFEDDEEF</color>
-    <color name="md_on_surface_variant">#FF4D4351</color>
-    <color name="md_inverse_surface">#FF342E37</color>
-    <color name="md_inverse_on_surface">#FFF9EDF9</color>
-    <color name="md_outline">#FF7F7383</color>
-    <color name="md_outline_variant">#FFD0C2D3</color>
-    <color name="md_surface_bright">#FFFFF7FC</color>
-    <color name="md_surface_dim">#FFE1D7E2</color>
-    <color name="md_surface_container_lowest">#FFFFFFFF</color>
-    <color name="md_surface_container_low">#FFFBF0FB</color>
-    <color name="md_surface_container">#FFF6EAF6</color>
-    <color name="md_surface_container_high">#FFF0E5F0</color>
-    <color name="md_surface_container_highest">#FFEADFEA</color>
+    <!-- Shown until Compose draws its first frame; the brand surface color. -->
+    <color name="window_background">#FFFFF7FC</color>
 </resources>

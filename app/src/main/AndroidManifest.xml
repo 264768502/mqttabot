@@ -7,6 +7,11 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Lets the user exempt the app from battery optimization in one tap: a persistent MQTT
+         subscription that triggers automations is an accepted use (no runtime prompt). -->
+    <uses-permission
+        android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
+        tools:ignore="BatteryLife" />
 
     <!-- Android 11+: lets TaskerEventDispatcher find the hosts that accept REQUEST_QUERY. -->
     <queries>
@@ -27,6 +32,7 @@
 
         <activity
             android:name=".ui.MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -36,6 +42,7 @@
 
         <activity
             android:name=".ui.BrokerSettingsActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="false"
             android:label="@string/broker_settings"
             android:parentActivityName=".ui.MainActivity" />
@@ -43,6 +50,7 @@
         <!-- Tasker action plugin: publish an MQTT message. -->
         <activity
             android:name=".tasker.PublishActionActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true"
             android:icon="@drawable/ic_launcher"
             android:label="@string/tasker_publish_label">
@@ -64,6 +72,7 @@
         <!-- Tasker event plugin: an MQTT message was received. -->
         <activity
             android:name=".tasker.EventConfigActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true"
             android:icon="@drawable/ic_launcher"
             android:label="@string/tasker_event_label">

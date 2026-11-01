@@ -4,8 +4,12 @@ import android.app.Application
 import android.app.Notification
 import android.app.NotificationManager
 import android.content.Intent
-import android.widget.Button
-import android.widget.EditText
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mqttabot.AppGraph
@@ -16,15 +20,19 @@ import com.mqttabot.mqtt.ConnectionState
 import com.mqttabot.service.MqttService
 import com.mqttabot.service.ServiceNotifications
 import com.mqttabot.tasker.EventConfigActivity
+import com.mqttabot.tasker.TAG_PATTERN
+import com.mqttabot.tasker.TAG_TASKER_SAVE
 import com.mqttabot.tasker.TaskerApi
 import com.mqttabot.testutil.EmbeddedBroker
 import com.mqttabot.testutil.FakeTasker
 import com.mqttabot.testutil.TestClient
 import com.mqttabot.testutil.awaitUntil
-import com.mqttabot.ui.QosToggleGroup
+import com.mqttabot.ui.TAG_FILTER
+import com.mqttabot.ui.TAG_QOS
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -36,6 +44,8 @@ import org.robolectric.Shadows.shadowOf
  */
 @RunWith(AndroidJUnit4::class)
 class SubscribeEndToEndTest {
+    @get:Rule val compose = createEmptyComposeRule()
+
     private val app = ApplicationProvider.getApplicationContext<Application>()
     private val broker = EmbeddedBroker(USER, PASS).start()
     private val tasker = FakeTasker(app)
@@ -55,17 +65,14 @@ class SubscribeEndToEndTest {
 
         // 1. The user adds the "MQTT message received" event in Tasker and configures it.
         val edit =
-            Robolectric
-                .buildActivity(
-                    EventConfigActivity::class.java,
-                    Intent(TaskerApi.ACTION_EDIT_EVENT).setClass(app, EventConfigActivity::class.java),
-                ).setup()
-                .get()
-        edit.findViewById<EditText>(R.id.filter_input).setText("sensors/+/temperature")
-        edit.findViewById<EditText>(R.id.pattern_input).setText("^\\d+(\\.\\d+)?$")
-        edit.findViewById<QosToggleGroup>(R.id.qos_group).qos = 1
-        edit.findViewById<Button>(R.id.save_button).performClick()
-        val eventConfig = shadowOf(edit).resultIntent.getBundleExtra(TaskerApi.EXTRA_BUNDLE)!!
+            ActivityScenario.launchActivityForResult<EventConfigActivity>(
+                Intent(TaskerApi.ACTION_EDIT_EVENT).setClass(app, EventConfigActivity::class.java),
+            )
+        compose.onNodeWithTag(TAG_FILTER).performTextReplacement("sensors/+/temperature")
+        compose.onNodeWithTag(TAG_PATTERN).performTextReplacement("^\\d+(\\.\\d+)?$")
+        compose.onNodeWithTag("$TAG_QOS-1").performScrollTo().performClick()
+        compose.onNodeWithTag(TAG_TASKER_SAVE).performScrollTo().performClick()
+        val eventConfig = edit.result.resultData.getBundleExtra(TaskerApi.EXTRA_BUNDLE)!!
         assertEquals(listOf(Subscription("sensors/+/temperature", 1)), AppGraph.settings.subscriptions())
 
         // 2. The foreground service connects and subscribes.
