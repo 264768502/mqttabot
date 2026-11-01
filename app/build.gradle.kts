@@ -54,6 +54,13 @@ android {
         generateLocaleConfig = true
     }
 
+    // Keep every language in the base APK: the in-app language picker may switch to any of them.
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
+
     buildFeatures {
         compose = true
     }

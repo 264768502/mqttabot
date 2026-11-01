@@ -82,6 +82,8 @@
     <string name="theme_auto">自动（19:00–07:00 深色）</string>
     <string name="theme_light">浅色</string>
     <string name="theme_dark">深色</string>
+    <string name="language_title">语言</string>
+    <string name="language_auto">自动（跟随系统）</string>
     <string name="diagnostics_title">诊断</string>
     <string name="log_enable">保存诊断日志</string>
     <string name="log_description">记录连接、订阅、服务、Tasker 和界面操作，仅凭日志即可分析问题。密码永远不会被记录；会记录主题和消息内容的开头部分。公开分享前请先检查日志。</string>

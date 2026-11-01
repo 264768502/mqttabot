@@ -7,6 +7,7 @@ import android.os.IBinder
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.mqttabot.AppGraph
+import com.mqttabot.data.AppLanguage
 import com.mqttabot.log.AppLog
 import com.mqttabot.mqtt.ConnectionController
 import com.mqttabot.mqtt.ConnectionStatus
@@ -15,6 +16,8 @@ import com.mqttabot.tasker.TaskerEventDispatcher
 
 /** Foreground service holding the long-lived MQTT subscription connection. */
 class MqttService : Service() {
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
+
     private var controller: ConnectionController? = null
     private lateinit var notifications: ServiceNotifications
     private val statusListener: (ConnectionStatus) -> Unit = { notifications.update(it) }

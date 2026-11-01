@@ -93,6 +93,8 @@
     <string name="theme_auto">Automatic (dark 19:00–07:00)</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="language_title">Language</string>
+    <string name="language_auto">Automatic (system language)</string>
     <string name="diagnostics_title">Diagnostics</string>
     <string name="log_enable">Save diagnostic log</string>
     <string name="log_description">Records connection, subscription, service, Tasker and screen activity so a problem can be analysed from the log alone. Passwords are never recorded; topics and the start of payloads are. Check the log before sharing it publicly.</string>

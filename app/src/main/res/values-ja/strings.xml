@@ -82,6 +82,8 @@
     <string name="theme_auto">自動（19:00–07:00 はダーク）</string>
     <string name="theme_light">ライト</string>
     <string name="theme_dark">ダーク</string>
+    <string name="language_title">言語</string>
+    <string name="language_auto">自動（システムの言語）</string>
     <string name="diagnostics_title">診断</string>
     <string name="log_enable">診断ログを保存</string>
     <string name="log_description">接続、購読、サービス、Tasker、画面の操作を記録し、ログだけで問題を分析できるようにします。パスワードは記録されません。トピックとメッセージ内容の先頭は記録されます。公開する前にログを確認してください。</string>

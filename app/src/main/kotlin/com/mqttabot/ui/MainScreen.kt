@@ -65,6 +65,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LifecycleStartEffect
 import com.mqttabot.AppGraph
 import com.mqttabot.R
+import com.mqttabot.data.AppLanguage
 import com.mqttabot.data.Subscription
 import com.mqttabot.data.ThemeMode
 import com.mqttabot.log.AppLog
@@ -78,10 +79,14 @@ import java.util.Locale
 const val TAG_MAIN_LIST = "main_list"
 const val TAG_SETTINGS = "open_settings"
 const val TAG_THEME = "theme"
+const val TAG_LANGUAGE = "language"
 const val TAG_DIAGNOSTICS = "open_diagnostics"
 
 /** Radio rows of the theme dialog are tagged "$TAG_THEME_OPTION-<ThemeMode name>". */
 const val TAG_THEME_OPTION = "theme_option"
+
+/** Radio rows of the language dialog are tagged "$TAG_LANGUAGE_OPTION-<tag>"; "" is automatic. */
+const val TAG_LANGUAGE_OPTION = "language_option"
 const val TAG_STATUS = "status"
 const val TAG_STATUS_DETAIL = "status_detail"
 const val TAG_STATUS_PROGRESS = "status_progress"
@@ -132,6 +137,7 @@ fun MainScreen(
     background: BackgroundMode,
     onOpenSettings: () -> Unit,
     onOpenDiagnostics: () -> Unit,
+    onChooseLanguage: (String) -> Unit,
     onToggleService: () -> Unit,
     onAllowBackground: () -> Unit,
 ) {
@@ -140,6 +146,7 @@ fun MainScreen(
     var brokerUri by remember { mutableStateOf("") }
     var subscriptions by remember { mutableStateOf(emptyList<Subscription>()) }
     var choosingTheme by rememberSaveable { mutableStateOf(false) }
+    var choosingLanguage by rememberSaveable { mutableStateOf(false) }
     // Settings may have changed in another screen or in Tasker.
     LifecycleStartEffect(Unit) {
         brokerUri = AppGraph.settings.loadBroker().serverUri
@@ -154,6 +161,9 @@ fun MainScreen(
                 actions = {
                     IconButton(onClick = { choosingTheme = true }, modifier = Modifier.testTag(TAG_THEME)) {
                         Icon(painterResource(R.drawable.ic_contrast), contentDescription = stringResource(R.string.theme_title))
+                    }
+                    IconButton(onClick = { choosingLanguage = true }, modifier = Modifier.testTag(TAG_LANGUAGE)) {
+                        Icon(painterResource(R.drawable.ic_language), contentDescription = stringResource(R.string.language_title))
                     }
                     IconButton(onClick = onOpenDiagnostics, modifier = Modifier.testTag(TAG_DIAGNOSTICS)) {
                         Icon(painterResource(R.drawable.ic_bug_report), contentDescription = stringResource(R.string.diagnostics_title))
@@ -190,32 +200,65 @@ fun MainScreen(
             itemsIndexed(messages) { index, message -> MessageItem(message, last = index == messages.lastIndex) }
         }
     }
-    if (choosingTheme) ThemeDialog { choosingTheme = false }
+    if (choosingTheme) {
+        val current by AppGraph.themeMode.observeAsState()
+        ChoiceDialog(
+            title = stringResource(R.string.theme_title),
+            options = ThemeMode.entries,
+            selected = current,
+            label = { stringResource(it.label) },
+            tag = { "$TAG_THEME_OPTION-${it.name}" },
+            onChoose = AppGraph::setThemeMode,
+            onDismiss = { choosingTheme = false },
+        )
+    }
+    if (choosingLanguage) {
+        val context = LocalContext.current
+        // Languages are listed in their own names; automatic in the current one.
+        val auto = stringResource(R.string.language_auto)
+        ChoiceDialog(
+            title = stringResource(R.string.language_title),
+            options = listOf(AppLanguage.AUTO) + AppLanguage.choices.keys,
+            selected = remember { AppLanguage.current(context) },
+            label = { AppLanguage.choices[it] ?: auto },
+            tag = { "$TAG_LANGUAGE_OPTION-$it" },
+            onChoose = onChooseLanguage,
+            onDismiss = { choosingLanguage = false },
+        )
+    }
 }
 
+/** Radio list of [options]; choosing one closes the dialog. */
 @Composable
-private fun ThemeDialog(onDismiss: () -> Unit) {
-    val current by AppGraph.themeMode.observeAsState()
+private fun <T> ChoiceDialog(
+    title: String,
+    options: List<T>,
+    selected: T,
+    label: @Composable (T) -> String,
+    tag: (T) -> String,
+    onChoose: (T) -> Unit,
+    onDismiss: () -> Unit,
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.theme_title)) },
+        title = { Text(title) },
         text = {
             Column(Modifier.selectableGroup()) {
-                for (mode in ThemeMode.entries) {
+                for (option in options) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier =
                             Modifier
                                 .fillMaxWidth()
                                 .heightIn(min = 56.dp)
-                                .selectable(selected = mode == current, role = Role.RadioButton) {
-                                    AppGraph.setThemeMode(mode)
+                                .selectable(selected = option == selected, role = Role.RadioButton) {
                                     onDismiss()
-                                }.testTag("$TAG_THEME_OPTION-${mode.name}"),
+                                    onChoose(option)
+                                }.testTag(tag(option)),
                     ) {
-                        RadioButton(selected = mode == current, onClick = null)
+                        RadioButton(selected = option == selected, onClick = null)
                         Spacer(Modifier.width(16.dp))
-                        Text(stringResource(mode.label), style = MaterialTheme.typography.bodyLarge)
+                        Text(label(option), style = MaterialTheme.typography.bodyLarge)
                     }
                 }
             }

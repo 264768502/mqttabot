@@ -2,6 +2,7 @@ package com.mqttabot.ui
 
 import android.Manifest
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -13,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.mqttabot.data.AppLanguage
 import com.mqttabot.log.AppLog
 import com.mqttabot.service.MqttService
 import com.mqttabot.ui.theme.setThemedContent
@@ -23,6 +25,8 @@ import com.mqttabot.ui.theme.setThemedContent
  * the user declines, a dialog explains why the app needs it.
  */
 class MainActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
+
     private var background by mutableStateOf(BackgroundMode.OPTIMIZED)
     private var explanation by mutableStateOf<Explanation?>(null)
 
@@ -49,6 +53,10 @@ class MainActivity : ComponentActivity() {
                 background = background,
                 onOpenSettings = { startActivity(Intent(this, BrokerSettingsActivity::class.java)) },
                 onOpenDiagnostics = { startActivity(Intent(this, DiagnosticsActivity::class.java)) },
+                onChooseLanguage = { tag ->
+                    AppLog.i(TAG, "Language set to ${tag.ifEmpty { "automatic" }}")
+                    AppLanguage.set(this, tag)
+                },
                 onToggleService = ::toggleService,
                 onAllowBackground = ::allowBackground,
             )

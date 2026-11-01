@@ -1,5 +1,6 @@
 package com.mqttabot.tasker
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -13,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mqttabot.R
+import com.mqttabot.data.AppLanguage
 import com.mqttabot.log.AppLog
 import com.mqttabot.mqtt.Topics
 import com.mqttabot.ui.FormField
@@ -26,6 +28,8 @@ import com.mqttabot.ui.theme.setThemedContent
 
 /** Tasker edit screen for the "MQTT publish" action. */
 class PublishActionActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val initial = PublishActionConfig.fromBundle(intent.getBundleExtra(TaskerApi.EXTRA_BUNDLE))

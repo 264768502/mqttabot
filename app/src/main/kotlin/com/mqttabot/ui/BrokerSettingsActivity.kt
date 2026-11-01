@@ -1,5 +1,6 @@
 package com.mqttabot.ui
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +54,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.mqttabot.AppGraph
 import com.mqttabot.R
+import com.mqttabot.data.AppLanguage
 import com.mqttabot.log.AppLog
 import com.mqttabot.log.Diagnostics
 import com.mqttabot.mqtt.BrokerConfig
@@ -81,6 +83,8 @@ private const val TAG = "BrokerSettings"
 
 /** Broker endpoint, credentials and connection options. */
 class BrokerSettingsActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AppLog.i(TAG, "Opened")

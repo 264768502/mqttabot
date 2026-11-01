@@ -82,6 +82,8 @@
     <string name="theme_auto">Automatisch (dunkel 19:00–07:00)</string>
     <string name="theme_light">Hell</string>
     <string name="theme_dark">Dunkel</string>
+    <string name="language_title">Sprache</string>
+    <string name="language_auto">Automatisch (Systemsprache)</string>
     <string name="diagnostics_title">Diagnose</string>
     <string name="log_enable">Diagnoseprotokoll speichern</string>
     <string name="log_description">Zeichnet Verbindungs-, Abonnement-, Dienst-, Tasker- und Bildschirmaktivität auf, sodass sich ein Problem allein anhand des Protokolls analysieren lässt. Passwörter werden nie aufgezeichnet; Topics und der Anfang von Nachrichten schon. Prüfe das Protokoll, bevor du es öffentlich teilst.</string>

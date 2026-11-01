@@ -58,6 +58,11 @@ class SettingsRepository(
         get() = ThemeMode.entries.firstOrNull { it.name == str(KEY_THEME, "") } ?: ThemeMode.AUTO
         set(value) = prefs.edit { putString(KEY_THEME, value.name) }
 
+    /** [AppLanguage] tag; used before Android 13 only. */
+    var language: String
+        get() = str(KEY_LANGUAGE, "").takeIf { it in AppLanguage.choices } ?: AppLanguage.AUTO
+        set(value) = prefs.edit { putString(KEY_LANGUAGE, value) }
+
     fun subscriptions(): List<Subscription> =
         try {
             val array = JSONArray(str(KEY_SUBSCRIPTIONS, "[]"))
@@ -103,6 +108,7 @@ class SettingsRepository(
         const val KEY_CLEAN_SESSION = "clean_session"
         const val KEY_AUTO_START = "auto_start_on_boot"
         const val KEY_THEME = "theme_mode"
+        const val KEY_LANGUAGE = "language"
         const val KEY_DIAGNOSTIC_LOGGING = "diagnostic_logging"
         const val KEY_SUBSCRIPTIONS = "subscriptions"
         private const val JSON_FILTER = "filter"

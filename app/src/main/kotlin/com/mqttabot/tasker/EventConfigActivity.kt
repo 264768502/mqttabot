@@ -1,5 +1,6 @@
 package com.mqttabot.tasker
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -14,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mqttabot.AppGraph
 import com.mqttabot.R
+import com.mqttabot.data.AppLanguage
 import com.mqttabot.data.Subscription
 import com.mqttabot.log.AppLog
 import com.mqttabot.mqtt.Topics
@@ -27,6 +29,8 @@ const val TAG_PATTERN = "pattern"
 
 /** Tasker edit screen for the "MQTT message received" event. */
 class EventConfigActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val initial = EventFilterConfig.fromBundle(intent.getBundleExtra(TaskerApi.EXTRA_BUNDLE))

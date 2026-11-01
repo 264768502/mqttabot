@@ -66,7 +66,7 @@ Dark theme:
 | Background activity | The main screen shows the app's battery usage setting (Unrestricted / Optimized / Restricted) and opens the right system screen to allow unrestricted background activity, so the subscription keeps running with the screen off. |
 | Permissions | Asked for only when needed: notifications (Android 13+) when the service starts. If declined, the app explains why it needs it and links to the system setting. |
 | Diagnostic log | Optional (Diagnostics screen, bug icon). Records connection, subscription, service, Tasker and UI activity plus crashes, so a problem can be analysed from the log alone; never records passwords, and keeps payloads to a short excerpt. Bounded to 2 MB (4 rotating files). Stored in app-specific storage (`Android/data/com.mqttabot/files/logs/`); the screen shows the path and can save the log (system file picker), share it, or open a GitHub issue to attach it to. |
-| Languages | English, Simplified Chinese, Traditional Chinese, Spanish, German, Korean and Japanese. The app follows the system language and falls back to English; on Android 13+ it can also be set per app in system settings. |
+| Languages | English, Simplified Chinese, Traditional Chinese, Spanish, German, Korean and Japanese. By default the app follows the system language and falls back to English; a language can be forced from the top bar (on Android 13+ also per app in system settings). |
 
 ### Using with Tasker
 

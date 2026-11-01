@@ -4,10 +4,13 @@ import android.app.Application
 import android.app.Notification
 import android.os.Build
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.mqttabot.R
 import com.mqttabot.mqtt.BrokerConfig
 import com.mqttabot.mqtt.ConnectionState
 import com.mqttabot.mqtt.ReceivedMessage
@@ -19,6 +22,8 @@ import com.mqttabot.testutil.FakeTasker
 import com.mqttabot.testutil.ManualTaskRunner
 import com.mqttabot.testutil.onMain
 import com.mqttabot.ui.MainActivity
+import com.mqttabot.ui.TAG_LANGUAGE
+import com.mqttabot.ui.TAG_LANGUAGE_OPTION
 import com.mqttabot.ui.TAG_SERVICE
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -70,5 +75,19 @@ class MinSdkCompatTest {
         }
         service.destroy()
         assertEquals(ConnectionState.DISCONNECTED, AppGraph.status.value.state)
+    }
+
+    @Test
+    fun chosenLanguageAppliesOnAndroid7() {
+        val main = ActivityScenario.launch(MainActivity::class.java)
+        compose.onNodeWithTag(TAG_LANGUAGE).performClick()
+        compose.onNodeWithTag("$TAG_LANGUAGE_OPTION-de").performClick()
+        assertEquals("de", AppGraph.settings.language)
+        // Recreated in German; the service follows too.
+        compose.onNodeWithContentDescription("Sprache").assertExists()
+        main.onActivity { assertEquals("Senden", it.getString(R.string.action_send)) }
+        main.close()
+        val service = Robolectric.buildService(MqttService::class.java).create().get()
+        assertEquals("Beenden", service.getString(R.string.action_stop))
     }
 }

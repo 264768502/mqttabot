@@ -82,6 +82,8 @@
     <string name="theme_auto">Automático (oscuro 19:00–07:00)</string>
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Oscuro</string>
+    <string name="language_title">Idioma</string>
+    <string name="language_auto">Automático (idioma del sistema)</string>
     <string name="diagnostics_title">Diagnóstico</string>
     <string name="log_enable">Guardar registro de diagnóstico</string>
     <string name="log_description">Registra la actividad de conexión, suscripciones, servicio, Tasker y pantallas para poder analizar un problema solo con el registro. Las contraseñas nunca se registran; los temas y el inicio de los mensajes sí. Revisa el registro antes de compartirlo públicamente.</string>

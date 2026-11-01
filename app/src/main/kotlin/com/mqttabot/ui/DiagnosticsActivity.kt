@@ -1,5 +1,6 @@
 package com.mqttabot.ui
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -52,6 +53,7 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.mqttabot.AppGraph
 import com.mqttabot.R
+import com.mqttabot.data.AppLanguage
 import com.mqttabot.log.AppLog
 import com.mqttabot.log.Diagnostics
 import com.mqttabot.ui.theme.setThemedContent
@@ -74,6 +76,8 @@ const val TAG_CLEAR_LOG = "clear_log"
  * GitHub issue. The log is size-bounded (see [com.mqttabot.log.LogFile]).
  */
 class DiagnosticsActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: Context) = super.attachBaseContext(AppLanguage.wrap(newBase))
+
     private var sizeBytes by mutableLongStateOf(0)
     private var message by mutableStateOf<String?>(null)
 

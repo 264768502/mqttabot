@@ -76,6 +76,16 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun languageDefaultsToAutoAndPersists() {
+        val repo = SettingsRepository(context)
+        assertEquals(AppLanguage.AUTO, repo.language)
+        repo.language = "de"
+        assertEquals("de", SettingsRepository(context).language)
+        prefs.edit().putString("language", "fr").commit()
+        assertEquals(AppLanguage.AUTO, repo.language)
+    }
+
+    @Test
     fun subscriptionsAddUpdateRemove() {
         val repo = SettingsRepository(context)
         assertEquals(emptyList<Subscription>(), repo.subscriptions())

@@ -82,6 +82,8 @@
     <string name="theme_auto">자동 (19:00–07:00 어둡게)</string>
     <string name="theme_light">밝게</string>
     <string name="theme_dark">어둡게</string>
+    <string name="language_title">언어</string>
+    <string name="language_auto">자동 (시스템 언어)</string>
     <string name="diagnostics_title">진단</string>
     <string name="log_enable">진단 로그 저장</string>
     <string name="log_description">연결, 구독, 서비스, Tasker 및 화면 활동을 기록하여 로그만으로 문제를 분석할 수 있습니다. 비밀번호는 절대 기록되지 않으며, 토픽과 메시지 내용의 앞부분은 기록됩니다. 공개적으로 공유하기 전에 로그를 확인하세요.</string>

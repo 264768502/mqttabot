@@ -30,6 +30,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mqttabot.AppGraph
 import com.mqttabot.R
+import com.mqttabot.data.AppLanguage
 import com.mqttabot.data.Subscription
 import com.mqttabot.data.ThemeMode
 import com.mqttabot.mqtt.BrokerConfig
@@ -375,6 +376,29 @@ class MainActivityTest {
         launch()
         compose.onNodeWithTag(TAG_DIAGNOSTICS).performClick()
         assertEquals(DiagnosticsActivity::class.java.name, shadowOf(activity()).nextStartedActivity.component!!.className)
+    }
+
+    @Test
+    fun choosesLanguage() {
+        launch()
+        compose.onNodeWithTag(TAG_LANGUAGE).performClick()
+        compose.onNodeWithTag("$TAG_LANGUAGE_OPTION-${AppLanguage.AUTO}").assertIsSelected()
+        compose.onNodeWithText(string(R.string.language_auto)).assertIsDisplayed()
+        // Each language is listed in its own name.
+        for (name in AppLanguage.choices.values) compose.onNodeWithText(name).assertExists()
+        compose.onNodeWithTag("$TAG_LANGUAGE_OPTION-de").performClick()
+        assertEquals("de", AppLanguage.current(app))
+        compose.onNodeWithText(string(R.string.language_title)).assertDoesNotExist()
+
+        compose.onNodeWithTag(TAG_LANGUAGE).performClick()
+        compose.onNodeWithTag("$TAG_LANGUAGE_OPTION-de").assertIsSelected()
+        compose.onNodeWithText(string(R.string.action_cancel)).performClick()
+        compose.onNodeWithTag("$TAG_LANGUAGE_OPTION-de").assertDoesNotExist()
+        assertEquals("de", AppLanguage.current(app))
+
+        compose.onNodeWithTag(TAG_LANGUAGE).performClick()
+        compose.onNodeWithTag("$TAG_LANGUAGE_OPTION-${AppLanguage.AUTO}").performClick()
+        assertEquals(AppLanguage.AUTO, AppLanguage.current(app))
     }
 
     @Test
