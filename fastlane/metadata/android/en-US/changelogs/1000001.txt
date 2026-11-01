@@ -1,0 +1,1 @@
+New app icon. F-Droid compatibility: the APK no longer embeds the encrypted dependency metadata block.

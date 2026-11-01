@@ -17,8 +17,8 @@ android {
         targetSdk = 36
         // Literal values so F-Droid can read them; the release workflow bumps them and checks
         // them against the tag. versionCode = major * 1_000_000 + minor * 1_000 + patch.
-        versionCode = 1000000
-        versionName = "1.0.0"
+        versionCode = 1000001
+        versionName = "1.0.1"
     }
 
     signingConfigs {
@@ -40,6 +40,12 @@ android {
             isMinifyEnabled = false
             signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
+    }
+
+    // No Google-encrypted dependency block in the APK signature; F-Droid rejects it.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 
     // Lists the translated locales for Android 13+ per-app language settings.
