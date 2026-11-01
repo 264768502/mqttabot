@@ -26,9 +26,9 @@ Android MQTT client + persistent subscription service + Tasker plugin. Written e
 
 ## Screenshots
 
-| Main screen | Broker settings | Tasker event |
-| :---: | :---: | :---: |
-| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1_main.png" width="260" alt="Main screen"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2_broker_settings.png" width="260" alt="Broker settings"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3_tasker_event.png" width="260" alt="Tasker event configuration"> |
+| Main screen | Messages | Broker settings | Tasker event |
+| :---: | :---: | :---: | :---: |
+| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1_main.png" width="200" alt="Main screen"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2_messages.png" width="200" alt="Messages"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3_broker_settings.png" width="200" alt="Broker settings"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4_tasker_event.png" width="200" alt="Tasker event configuration"> |
 
 ## Features
 
@@ -39,6 +39,7 @@ Android MQTT client + persistent subscription service + Tasker plugin. Written e
 | Built-in brokers | test.mosquitto.org (TCP / TLS / authenticated 1884), broker.hivemq.com, broker.emqx.io, mqtt.eclipseprojects.io (TCP and TLS), or a custom broker; supports username, password, client ID, keep-alive and clean session. |
 | Tasker action | "MqttABot: Publish" — publish MQTT messages from Tasker; topic and payload accept Tasker `%variables`. |
 | Tasker event | "MqttABot: Message received" — received messages trigger Tasker profiles, with topic wildcards (`+`, `#`) and an optional payload regex. Saving the event adds its filter to the subscription list. |
+| Interface | Material 3 Expressive: wallpaper-based dynamic color on Android 12+ (brand purple otherwise), light and dark themes, edge-to-edge layout, collapsing top app bar, connected button groups for QoS, and a centred column on tablets and in landscape. |
 | Languages | English, Simplified Chinese, Traditional Chinese, Spanish, German, Korean and Japanese. The app follows the system language and falls back to English; on Android 13+ it can also be set per app in system settings. |
 
 ### Using with Tasker

@@ -39,6 +39,9 @@ object AppGraph {
 
     @Volatile var foregroundStarter: (Service, Int, Notification) -> Unit = ::startForegroundSpecialUse
 
+    /** Use wallpaper colors where available; screenshots turn this off to show the brand colors. */
+    @Volatile var dynamicColor = true
+
     /** Live connection owned by the running MqttService, if any. */
     @Volatile var controller: ConnectionController? = null
 
@@ -48,6 +51,7 @@ object AppGraph {
         taskRunnerFactory = defaultTaskRunnerFactory
         ioExecutor = defaultIoExecutor
         foregroundStarter = ::startForegroundSpecialUse
+        dynamicColor = true
         controller = null
         status.clearListeners()
         status.set(ConnectionStatus.DISCONNECTED)

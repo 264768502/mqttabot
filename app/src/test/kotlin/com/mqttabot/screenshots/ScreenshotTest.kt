@@ -6,9 +6,10 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.Looper
 import android.widget.EditText
-import android.widget.Spinner
+import androidx.core.widget.NestedScrollView
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.android.material.appbar.AppBarLayout
 import com.mqttabot.AppGraph
 import com.mqttabot.R
 import com.mqttabot.data.Subscription
@@ -20,6 +21,7 @@ import com.mqttabot.testutil.FakeGateway
 import com.mqttabot.testutil.ManualTaskRunner
 import com.mqttabot.ui.BrokerSettingsActivity
 import com.mqttabot.ui.MainActivity
+import com.mqttabot.ui.QosToggleGroup
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -53,6 +55,8 @@ abstract class ScreenshotTest(
             ),
         )
         AppGraph.settings.autoStartOnBoot = true
+        // Brand colors instead of Robolectric's default wallpaper palette.
+        AppGraph.dynamicColor = false
         AppGraph.settings.addSubscription(Subscription("home/+/temperature", 1))
         AppGraph.settings.addSubscription(Subscription("home/door/#", 2))
         // A connected service, so status and the start/stop button agree.
@@ -66,18 +70,28 @@ abstract class ScreenshotTest(
     }
 
     @Test
-    @Config(qualifiers = "+h1080dp")
     fun main() {
         val a = Robolectric.buildActivity(MainActivity::class.java).setup().get()
         a.findViewById<EditText>(R.id.topic_input).setText("home/livingroom/light")
         a.findViewById<EditText>(R.id.payload_input).setText("ON")
-        a.findViewById<Spinner>(R.id.qos_spinner).setSelection(1)
+        a.findViewById<QosToggleGroup>(R.id.qos_group).qos = 1
         capture(a, "1_main")
+    }
+
+    /** Scrolled to the bottom, with the app bar collapsed. */
+    @Test
+    fun messages() {
+        val a = Robolectric.buildActivity(MainActivity::class.java).setup().get()
+        a.findViewById<AppBarLayout>(R.id.app_bar).setExpanded(false, false)
+        shadowOf(Looper.getMainLooper()).idle()
+        val content = a.findViewById<NestedScrollView>(R.id.content)
+        content.scrollTo(0, content.getChildAt(0).height)
+        capture(a, "2_messages")
     }
 
     @Test
     fun brokerSettings() {
-        capture(Robolectric.buildActivity(BrokerSettingsActivity::class.java).setup().get(), "2_broker_settings")
+        capture(Robolectric.buildActivity(BrokerSettingsActivity::class.java).setup().get(), "3_broker_settings")
     }
 
     @Test
@@ -86,7 +100,7 @@ abstract class ScreenshotTest(
         val a = Robolectric.buildActivity(EventConfigActivity::class.java, intent).setup().get()
         a.findViewById<EditText>(R.id.filter_input).setText("home/+/temperature")
         a.findViewById<EditText>(R.id.pattern_input).setText("^\\d+(\\.\\d+)?$")
-        capture(a, "3_tasker_event")
+        capture(a, "4_tasker_event")
     }
 
     private fun capture(

@@ -5,10 +5,16 @@
     <string name="section_publish">Publicar</string>
     <string name="section_subscriptions">Suscripciones</string>
     <string name="section_messages">Mensajes recibidos</string>
+    <string name="section_server">Servidor</string>
+    <string name="section_auth">Autenticación</string>
+    <string name="section_session">Sesión</string>
     <string name="status_disconnected">Desconectado</string>
     <string name="status_connecting">Conectando a %1$s…</string>
     <string name="status_connected">Conectado a %1$s</string>
     <string name="status_waiting_retry">Reconectando (%1$s)</string>
+    <string name="state_connected">Conectado</string>
+    <string name="state_connecting">Conectando…</string>
+    <string name="state_reconnecting">Reconectando…</string>
     <string name="action_start_service">Iniciar servicio de suscripción</string>
     <string name="action_stop_service">Detener servicio de suscripción</string>
     <string name="action_stop">Detener</string>
@@ -18,6 +24,7 @@
     <string name="action_clear">Borrar</string>
     <string name="action_save">Guardar</string>
     <string name="action_cancel">Cancelar</string>
+    <string name="action_back">Volver</string>
     <string name="hint_topic">Tema</string>
     <string name="hint_payload">Contenido</string>
     <string name="hint_filter">Filtro de tema (se permiten + y #)</string>
@@ -40,8 +47,6 @@
     <string name="publish_failed">Error al publicar: %1$s</string>
     <string name="no_subscriptions">Aún no hay suscripciones.</string>
     <string name="no_messages">Aún no se han recibido mensajes.</string>
-    <string name="subscription_item">%1$s (QoS %2$d)</string>
-    <string name="message_item">%1$s  %2$s  [QoS %3$d]\n%4$s</string>
     <string name="error_topic">Introduce un tema sin los comodines + o #</string>
     <string name="error_filter">Filtro de tema no válido</string>
     <string name="error_pattern">Expresión regular no válida</string>

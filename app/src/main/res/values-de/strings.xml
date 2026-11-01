@@ -5,10 +5,16 @@
     <string name="section_publish">Veröffentlichen</string>
     <string name="section_subscriptions">Abonnements</string>
     <string name="section_messages">Empfangene Nachrichten</string>
+    <string name="section_server">Server</string>
+    <string name="section_auth">Authentifizierung</string>
+    <string name="section_session">Sitzung</string>
     <string name="status_disconnected">Getrennt</string>
     <string name="status_connecting">Verbinde mit %1$s…</string>
     <string name="status_connected">Verbunden mit %1$s</string>
     <string name="status_waiting_retry">Verbindung wird wiederhergestellt (%1$s)</string>
+    <string name="state_connected">Verbunden</string>
+    <string name="state_connecting">Verbindung wird hergestellt…</string>
+    <string name="state_reconnecting">Verbindung wird wiederhergestellt…</string>
     <string name="action_start_service">Abonnement-Dienst starten</string>
     <string name="action_stop_service">Abonnement-Dienst beenden</string>
     <string name="action_stop">Beenden</string>
@@ -18,6 +24,7 @@
     <string name="action_clear">Leeren</string>
     <string name="action_save">Speichern</string>
     <string name="action_cancel">Abbrechen</string>
+    <string name="action_back">Zurück</string>
     <string name="hint_topic">Topic</string>
     <string name="hint_payload">Inhalt</string>
     <string name="hint_filter">Topic-Filter (+ und # erlaubt)</string>
@@ -40,8 +47,6 @@
     <string name="publish_failed">Veröffentlichen fehlgeschlagen: %1$s</string>
     <string name="no_subscriptions">Noch keine Abonnements.</string>
     <string name="no_messages">Noch keine Nachrichten empfangen.</string>
-    <string name="subscription_item">%1$s (QoS %2$d)</string>
-    <string name="message_item">%1$s  %2$s  [QoS %3$d]\n%4$s</string>
     <string name="error_topic">Gib ein Topic ohne die Platzhalter + oder # ein</string>
     <string name="error_filter">Ungültiger Topic-Filter</string>
     <string name="error_pattern">Ungültiger regulärer Ausdruck</string>

@@ -23,6 +23,7 @@ class AppGraphTest {
         AppGraph.status.set(ConnectionStatus(ConnectionState.CONNECTED))
         AppGraph.messageLog.add(ReceivedMessage("t", "p", 0, false, 0))
         AppGraph.controller = AppGraph.newController {}
+        AppGraph.dynamicColor = false
         val seen = mutableListOf<ConnectionStatus>()
         AppGraph.status.observe { seen += it }
         AppGraph.init(context)
@@ -32,6 +33,7 @@ class AppGraphTest {
                 .isEmpty(),
         )
         assertNull(AppGraph.controller)
+        assertTrue(AppGraph.dynamicColor)
         AppGraph.status.set(ConnectionStatus(ConnectionState.CONNECTING))
         assertEquals(1, seen.size)
     }

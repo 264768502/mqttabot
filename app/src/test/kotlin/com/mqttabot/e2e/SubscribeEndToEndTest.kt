@@ -6,7 +6,6 @@ import android.app.NotificationManager
 import android.content.Intent
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Spinner
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mqttabot.AppGraph
@@ -22,6 +21,7 @@ import com.mqttabot.testutil.EmbeddedBroker
 import com.mqttabot.testutil.FakeTasker
 import com.mqttabot.testutil.TestClient
 import com.mqttabot.testutil.awaitUntil
+import com.mqttabot.ui.QosToggleGroup
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -63,7 +63,7 @@ class SubscribeEndToEndTest {
                 .get()
         edit.findViewById<EditText>(R.id.filter_input).setText("sensors/+/temperature")
         edit.findViewById<EditText>(R.id.pattern_input).setText("^\\d+(\\.\\d+)?$")
-        edit.findViewById<Spinner>(R.id.qos_spinner).setSelection(1)
+        edit.findViewById<QosToggleGroup>(R.id.qos_group).qos = 1
         edit.findViewById<Button>(R.id.save_button).performClick()
         val eventConfig = shadowOf(edit).resultIntent.getBundleExtra(TaskerApi.EXTRA_BUNDLE)!!
         assertEquals(listOf(Subscription("sensors/+/temperature", 1)), AppGraph.settings.subscriptions())

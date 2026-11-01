@@ -3,9 +3,8 @@ package com.mqttabot.e2e
 import android.app.Application
 import android.content.Intent
 import android.widget.Button
-import android.widget.CheckBox
+import android.widget.CompoundButton
 import android.widget.EditText
-import android.widget.Spinner
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -21,6 +20,7 @@ import com.mqttabot.testutil.FakeTasker
 import com.mqttabot.testutil.TestClient
 import com.mqttabot.testutil.awaitUntil
 import com.mqttabot.ui.MainActivity
+import com.mqttabot.ui.QosToggleGroup
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -68,8 +68,8 @@ class PublishEndToEndTest {
                 .get()
         edit.findViewById<EditText>(R.id.topic_input).setText("home/%room/light")
         edit.findViewById<EditText>(R.id.payload_input).setText("%state")
-        edit.findViewById<Spinner>(R.id.qos_spinner).setSelection(1)
-        edit.findViewById<CheckBox>(R.id.retain_check).isChecked = false
+        edit.findViewById<QosToggleGroup>(R.id.qos_group).qos = 1
+        edit.findViewById<CompoundButton>(R.id.retain_check).isChecked = false
         edit.findViewById<Button>(R.id.save_button).performClick()
         val stored = shadowOf(edit).resultIntent.getBundleExtra(TaskerApi.EXTRA_BUNDLE)!!
 
@@ -97,8 +97,8 @@ class PublishEndToEndTest {
         val main = Robolectric.buildActivity(MainActivity::class.java).setup().get()
         main.findViewById<EditText>(R.id.topic_input).setText("home/garage/door")
         main.findViewById<EditText>(R.id.payload_input).setText("close")
-        main.findViewById<Spinner>(R.id.qos_spinner).setSelection(2)
-        main.findViewById<CheckBox>(R.id.retain_check).isChecked = true
+        main.findViewById<QosToggleGroup>(R.id.qos_group).qos = 2
+        main.findViewById<CompoundButton>(R.id.retain_check).isChecked = true
         main.findViewById<Button>(R.id.send_button).performClick()
 
         val result = main.findViewById<TextView>(R.id.publish_result)

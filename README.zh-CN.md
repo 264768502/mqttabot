@@ -26,9 +26,9 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 
 ## 截图
 
-| 主界面 | 服务器设置 | Tasker 事件 |
-| :---: | :---: | :---: |
-| <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/1_main.png" width="260" alt="主界面"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/2_broker_settings.png" width="260" alt="服务器设置"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/3_tasker_event.png" width="260" alt="Tasker 事件配置"> |
+| 主界面 | 消息 | 服务器设置 | Tasker 事件 |
+| :---: | :---: | :---: | :---: |
+| <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/1_main.png" width="200" alt="主界面"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/2_messages.png" width="200" alt="消息"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/3_broker_settings.png" width="200" alt="服务器设置"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/4_tasker_event.png" width="200" alt="Tasker 事件配置"> |
 
 ## 功能
 
@@ -39,6 +39,7 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 | 内置服务器 | test.mosquitto.org（TCP / TLS / 带认证 1884）、broker.hivemq.com、broker.emqx.io、mqtt.eclipseprojects.io（TCP 与 TLS），也可自定义；支持用户名、密码、Client ID、Keep-alive、Clean session。 |
 | Tasker 动作 | “MqttABot: Publish”——在 Tasker 中发送 MQTT 消息，topic 与 payload 支持 Tasker `%变量`。 |
 | Tasker 事件 | “MqttABot: Message received”——订阅到的消息作为 Tasker 触发器，支持 topic 通配符（`+`、`#`）和可选的 payload 正则。保存时自动把过滤器加入订阅列表。 |
+| 界面 | Material 3 Expressive 设计：Android 12+ 跟随壁纸动态取色（其他版本使用品牌紫色），支持浅色/深色主题、全面屏（edge-to-edge）布局、可折叠顶部栏、QoS 连接按钮组；平板和横屏时内容居中显示。 |
 | 多语言 | 英文、简体中文、繁体中文、西班牙文、德文、韩文和日文。自动跟随系统语言，不支持的语言显示英文；Android 13+ 还可以在系统设置中单独为本应用选择语言。 |
 
 ### Tasker 使用

@@ -5,10 +5,16 @@
     <string name="section_publish">パブリッシュ</string>
     <string name="section_subscriptions">購読</string>
     <string name="section_messages">受信したメッセージ</string>
+    <string name="section_server">サーバー</string>
+    <string name="section_auth">認証</string>
+    <string name="section_session">セッション</string>
     <string name="status_disconnected">未接続</string>
     <string name="status_connecting">%1$s に接続中…</string>
     <string name="status_connected">%1$s に接続済み</string>
     <string name="status_waiting_retry">再接続中（%1$s）</string>
+    <string name="state_connected">接続済み</string>
+    <string name="state_connecting">接続中…</string>
+    <string name="state_reconnecting">再接続中…</string>
     <string name="action_start_service">購読サービスを開始</string>
     <string name="action_stop_service">購読サービスを停止</string>
     <string name="action_stop">停止</string>
@@ -18,6 +24,7 @@
     <string name="action_clear">クリア</string>
     <string name="action_save">保存</string>
     <string name="action_cancel">キャンセル</string>
+    <string name="action_back">戻る</string>
     <string name="hint_topic">トピック</string>
     <string name="hint_payload">ペイロード</string>
     <string name="hint_filter">トピックフィルター（+ と # が使用可能）</string>
@@ -40,8 +47,6 @@
     <string name="publish_failed">パブリッシュに失敗しました：%1$s</string>
     <string name="no_subscriptions">購読はまだありません。</string>
     <string name="no_messages">まだメッセージを受信していません。</string>
-    <string name="subscription_item">%1$s（QoS %2$d）</string>
-    <string name="message_item">%1$s  %2$s  [QoS %3$d]\n%4$s</string>
     <string name="error_topic">+ や # のワイルドカードを含まないトピックを入力してください</string>
     <string name="error_filter">トピックフィルターが無効です</string>
     <string name="error_pattern">正規表現が無効です</string>

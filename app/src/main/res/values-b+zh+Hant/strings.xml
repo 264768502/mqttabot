@@ -5,10 +5,16 @@
     <string name="section_publish">發佈訊息</string>
     <string name="section_subscriptions">訂閱</string>
     <string name="section_messages">收到的訊息</string>
+    <string name="section_server">伺服器</string>
+    <string name="section_auth">驗證</string>
+    <string name="section_session">工作階段</string>
     <string name="status_disconnected">未連線</string>
     <string name="status_connecting">正在連線至 %1$s…</string>
     <string name="status_connected">已連線至 %1$s</string>
     <string name="status_waiting_retry">正在重新連線（%1$s）</string>
+    <string name="state_connected">已連線</string>
+    <string name="state_connecting">正在連線…</string>
+    <string name="state_reconnecting">正在重新連線…</string>
     <string name="action_start_service">啟動訂閱服務</string>
     <string name="action_stop_service">停止訂閱服務</string>
     <string name="action_stop">停止</string>
@@ -18,6 +24,7 @@
     <string name="action_clear">清除</string>
     <string name="action_save">儲存</string>
     <string name="action_cancel">取消</string>
+    <string name="action_back">返回</string>
     <string name="hint_topic">主題</string>
     <string name="hint_payload">訊息內容</string>
     <string name="hint_filter">主題篩選器（支援 + 和 #）</string>
@@ -40,8 +47,6 @@
     <string name="publish_failed">發佈失敗：%1$s</string>
     <string name="no_subscriptions">尚無訂閱。</string>
     <string name="no_messages">尚未收到訊息。</string>
-    <string name="subscription_item">%1$s（QoS %2$d）</string>
-    <string name="message_item">%1$s  %2$s  [QoS %3$d]\n%4$s</string>
     <string name="error_topic">請輸入不含 + 或 # 萬用字元的主題</string>
     <string name="error_filter">主題篩選器無效</string>
     <string name="error_pattern">正規表示式無效</string>

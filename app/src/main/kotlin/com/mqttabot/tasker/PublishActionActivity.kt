@@ -3,37 +3,36 @@ package com.mqttabot.tasker
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
-import android.widget.CheckBox
+import android.widget.CompoundButton
 import android.widget.EditText
-import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.TextInputLayout
 import com.mqttabot.R
 import com.mqttabot.mqtt.Topics
-import com.mqttabot.ui.QosAdapter
+import com.mqttabot.ui.QosToggleGroup
+import com.mqttabot.ui.setEdgeToEdgeContentView
 
 /** Tasker edit screen for the "MQTT publish" action. */
 class PublishActionActivity : AppCompatActivity() {
     private lateinit var topicLayout: TextInputLayout
     private lateinit var topic: EditText
     private lateinit var payload: EditText
-    private lateinit var qos: Spinner
-    private lateinit var retained: CheckBox
+    private lateinit var qos: QosToggleGroup
+    private lateinit var retained: CompoundButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_publish_action)
+        setEdgeToEdgeContentView(R.layout.activity_publish_action)
         topicLayout = findViewById(R.id.topic_layout)
         topic = findViewById(R.id.topic_input)
         payload = findViewById(R.id.payload_input)
-        qos = findViewById(R.id.qos_spinner)
+        qos = findViewById(R.id.qos_group)
         retained = findViewById(R.id.retain_check)
-        qos.adapter = QosAdapter.create(this)
 
         PublishActionConfig.fromBundle(intent.getBundleExtra(TaskerApi.EXTRA_BUNDLE))?.let {
             topic.setText(it.topic)
             payload.setText(it.payload)
-            qos.setSelection(it.qos.coerceIn(0, 2))
+            qos.qos = it.qos
             retained.isChecked = it.retained
         }
         findViewById<Button>(R.id.save_button).setOnClickListener { save() }
@@ -49,7 +48,7 @@ class PublishActionActivity : AppCompatActivity() {
             topicLayout.error = getString(R.string.error_topic)
             return
         }
-        val config = PublishActionConfig(topicText, payload.text.toString(), qos.selectedItemPosition, retained.isChecked)
+        val config = PublishActionConfig(topicText, payload.text.toString(), qos.qos, retained.isChecked)
         val result =
             Intent()
                 .putExtra(TaskerApi.EXTRA_BUNDLE, config.toBundle())

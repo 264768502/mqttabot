@@ -2,11 +2,12 @@ package com.mqttabot.ui
 
 import android.app.Application
 import android.widget.Button
-import android.widget.CheckBox
+import android.widget.CompoundButton
 import android.widget.EditText
-import android.widget.Spinner
+import android.widget.ImageButton
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.textfield.TextInputLayout
 import com.mqttabot.AppGraph
 import com.mqttabot.R
@@ -40,6 +41,8 @@ class BrokerSettingsActivityTest {
         value: String,
     ) = findViewById<EditText>(id).setText(value)
 
+    private fun BrokerSettingsActivity.preset() = text(R.id.preset_input)
+
     private fun BrokerSettingsActivity.save() = findViewById<Button>(R.id.save_button).performClick()
 
     @Test
@@ -49,43 +52,42 @@ class BrokerSettingsActivityTest {
         val a = launch()
         assertEquals("broker.emqx.io", a.text(R.id.host_input))
         assertEquals("8883", a.text(R.id.port_input))
-        assertTrue(a.findViewById<CheckBox>(R.id.tls_check).isChecked)
+        assertTrue(a.findViewById<CompoundButton>(R.id.tls_check).isChecked)
         assertEquals("u", a.text(R.id.username_input))
         assertEquals("p", a.text(R.id.password_input))
         assertEquals("cid", a.text(R.id.client_id_input))
         assertEquals("15", a.text(R.id.keep_alive_input))
-        assertFalse(a.findViewById<CheckBox>(R.id.clean_session_check).isChecked)
-        assertTrue(a.findViewById<CheckBox>(R.id.auto_start_check).isChecked)
+        assertFalse(a.findViewById<CompoundButton>(R.id.clean_session_check).isChecked)
+        assertTrue(a.findViewById<CompoundButton>(R.id.auto_start_check).isChecked)
         val expected = BrokerPresets.all.indexOfFirst { it.host == "broker.emqx.io" && it.tls } + 1
-        assertEquals(expected, a.findViewById<Spinner>(R.id.preset_spinner).selectedItemPosition)
+        assertEquals(BrokerPresets.all[expected - 1].name, a.preset())
     }
 
     @Test
     fun choosingPresetsFillsEndpoint() {
         AppGraph.settings.saveBroker(BrokerConfig(host = "custom.example", username = "me", password = "pw"))
         val a = launch()
-        assertEquals(0, a.findViewById<Spinner>(R.id.preset_spinner).selectedItemPosition)
+        assertEquals(app.getString(R.string.preset_custom), a.preset())
         // Re-selecting the applied position is a no-op.
-        a.onItemSelected(null, null, 0, 0)
+        a.onItemClick(null, null, 0, 0)
         assertEquals("custom.example", a.text(R.id.host_input))
 
         val hive = BrokerPresets.all.indexOfFirst { it.host == "broker.hivemq.com" && it.tls }
-        a.onItemSelected(null, null, hive + 1, 0)
+        a.onItemClick(null, null, hive + 1, 0)
         assertEquals("broker.hivemq.com", a.text(R.id.host_input))
         assertEquals("8883", a.text(R.id.port_input))
-        assertTrue(a.findViewById<CheckBox>(R.id.tls_check).isChecked)
+        assertTrue(a.findViewById<CompoundButton>(R.id.tls_check).isChecked)
         // Presets without credentials keep the user's.
         assertEquals("me", a.text(R.id.username_input))
 
         val auth = BrokerPresets.all.indexOfFirst { it.username.isNotEmpty() }
-        a.onItemSelected(null, null, auth + 1, 0)
+        a.onItemClick(null, null, auth + 1, 0)
         assertEquals("rw", a.text(R.id.username_input))
         assertEquals("readwrite", a.text(R.id.password_input))
 
         // Back to custom keeps the form as-is.
-        a.onItemSelected(null, null, 0, 0)
+        a.onItemClick(null, null, 0, 0)
         assertEquals("test.mosquitto.org", a.text(R.id.host_input))
-        a.onNothingSelected(null)
     }
 
     @Test
@@ -104,13 +106,13 @@ class BrokerSettingsActivityTest {
         val a = launch()
         a.set(R.id.host_input, " my.host ")
         a.set(R.id.port_input, "1884")
-        a.findViewById<CheckBox>(R.id.tls_check).isChecked = false
+        a.findViewById<CompoundButton>(R.id.tls_check).isChecked = false
         a.set(R.id.username_input, "user")
         a.set(R.id.password_input, "secret")
         a.set(R.id.client_id_input, " my-id ")
         a.set(R.id.keep_alive_input, "45")
-        a.findViewById<CheckBox>(R.id.clean_session_check).isChecked = false
-        a.findViewById<CheckBox>(R.id.auto_start_check).isChecked = true
+        a.findViewById<CompoundButton>(R.id.clean_session_check).isChecked = false
+        a.findViewById<CompoundButton>(R.id.auto_start_check).isChecked = true
         a.save()
         assertTrue(a.isFinishing)
         assertEquals(BrokerConfig("my.host", 1884, false, "user", "secret", "my-id", 45, false), AppGraph.settings.loadBroker())
@@ -156,5 +158,20 @@ class BrokerSettingsActivityTest {
         assertNotNull(error(R.id.username_layout))
         assertFalse(a.isFinishing)
         assertEquals(app.getString(R.string.error_username), error(R.id.username_layout).toString())
+    }
+
+    @Test
+    fun navigateUpDiscardsChanges() {
+        AppGraph.settings.saveBroker(BrokerConfig(host = "kept"))
+        val a = launch()
+        a.set(R.id.host_input, "discarded")
+        val toolbar = a.findViewById<MaterialToolbar>(R.id.toolbar)
+        (0 until toolbar.childCount)
+            .map(toolbar::getChildAt)
+            .filterIsInstance<ImageButton>()
+            .single()
+            .performClick()
+        assertTrue(a.isFinishing)
+        assertEquals("kept", AppGraph.settings.loadBroker().host)
     }
 }

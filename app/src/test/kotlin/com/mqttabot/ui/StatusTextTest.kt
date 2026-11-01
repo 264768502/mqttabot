@@ -29,7 +29,14 @@ class StatusTextTest {
     }
 
     @Test
-    fun qosAdapterHasThreeLevels() {
-        assertEquals(3, QosAdapter.create(context).count)
+    fun everyStateHasItsOwnStyle() {
+        val styles = ConnectionState.entries.map { it.style }
+        assertEquals(ConnectionState.entries.size, styles.map { it.icon }.toSet().size)
+        assertEquals(ConnectionState.entries.size, styles.map { it.container }.toSet().size)
+        assertEquals(listOf(ConnectionState.CONNECTING), ConnectionState.entries.filter { it.style.busy })
+        assertEquals(listOf(ConnectionState.WAITING_RETRY), ConnectionState.entries.filter { it.style.showDetail })
+        assertEquals(R.string.status_disconnected, ConnectionState.DISCONNECTED.style.headline)
+        assertEquals(R.string.state_connected, ConnectionState.CONNECTED.style.headline)
+        assertEquals(styles.size, styles.map { it.onContainer }.toSet().size)
     }
 }

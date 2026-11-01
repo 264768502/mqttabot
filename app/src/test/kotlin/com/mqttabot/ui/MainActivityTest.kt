@@ -5,13 +5,13 @@ import android.app.Application
 import android.app.NotificationManager
 import android.view.View
 import android.widget.Button
-import android.widget.CheckBox
+import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.Spinner
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.textfield.TextInputLayout
 import com.mqttabot.AppGraph
 import com.mqttabot.R
@@ -72,12 +72,27 @@ class MainActivityTest {
     @Test
     fun showsBrokerAndStatus() {
         val a = launch().get()
+        val status = a.findViewById<TextView>(R.id.status_text)
+        val detail = a.findViewById<TextView>(R.id.status_detail)
+        val icon = a.findViewById<View>(R.id.status_icon)
+        val progress = a.findViewById<View>(R.id.status_progress)
         assertEquals("tcp://broker:1883", a.findViewById<TextView>(R.id.broker_text).text.toString())
-        assertEquals(app.getString(R.string.status_disconnected), a.findViewById<TextView>(R.id.status_text).text.toString())
+        assertEquals(app.getString(R.string.status_disconnected), status.text.toString())
         assertEquals(app.getString(R.string.action_start_service), a.findViewById<Button>(R.id.service_button).text.toString())
+        assertEquals(View.VISIBLE, icon.visibility)
+        assertEquals(View.GONE, progress.visibility)
+        assertEquals(View.GONE, detail.visibility)
 
         AppGraph.status.set(ConnectionStatus(ConnectionState.CONNECTING, "x"))
-        assertEquals(app.getString(R.string.status_connecting, "x"), a.findViewById<TextView>(R.id.status_text).text.toString())
+        assertEquals(app.getString(R.string.state_connecting), status.text.toString())
+        assertEquals(View.INVISIBLE, icon.visibility)
+        assertEquals(View.VISIBLE, progress.visibility)
+
+        AppGraph.status.set(ConnectionStatus(ConnectionState.WAITING_RETRY, "boom"))
+        assertEquals(app.getString(R.string.state_reconnecting), status.text.toString())
+        assertEquals(View.VISIBLE, detail.visibility)
+        assertEquals("boom", detail.text.toString())
+        assertEquals(View.VISIBLE, icon.visibility)
     }
 
     @Test
@@ -113,12 +128,14 @@ class MainActivityTest {
         val a = launch().get()
         a.findViewById<EditText>(R.id.topic_input).setText(" a/b ")
         a.findViewById<EditText>(R.id.payload_input).setText("hello")
-        a.findViewById<Spinner>(R.id.qos_spinner).setSelection(1)
-        a.findViewById<CheckBox>(R.id.retain_check).isChecked = true
+        a.findViewById<QosToggleGroup>(R.id.qos_group).qos = 1
+        a.findViewById<CompoundButton>(R.id.retain_check).isChecked = true
         val send = a.findViewById<Button>(R.id.send_button)
         val result = a.findViewById<TextView>(R.id.publish_result)
+        assertEquals(View.GONE, result.visibility)
         send.performClick()
         assertEquals(false, send.isEnabled)
+        assertEquals(View.VISIBLE, result.visibility)
         assertEquals(app.getString(R.string.publish_sending), result.text.toString())
         runIo()
         assertTrue(send.isEnabled)
@@ -159,7 +176,7 @@ class MainActivityTest {
         assertNotNull(filterLayout.error)
 
         a.findViewById<EditText>(R.id.filter_input).setText("home/#")
-        a.findViewById<Spinner>(R.id.filter_qos_spinner).setSelection(2)
+        a.findViewById<QosToggleGroup>(R.id.filter_qos_group).qos = 2
         a.findViewById<Button>(R.id.add_subscription_button).performClick()
         assertNull(filterLayout.error)
         assertEquals("", a.findViewById<EditText>(R.id.filter_input).text.toString())
@@ -167,14 +184,9 @@ class MainActivityTest {
         assertEquals("home/#" to 2, gateway.subscriptions.last())
         assertEquals(1, container.childCount)
         assertEquals(View.GONE, empty.visibility)
-        assertEquals(
-            app.getString(R.string.subscription_item, "home/#", 2),
-            container
-                .getChildAt(0)
-                .findViewById<TextView>(R.id.subscription_text)
-                .text
-                .toString(),
-        )
+        val row = container.getChildAt(0)
+        assertEquals("home/#", row.findViewById<TextView>(R.id.subscription_text).text.toString())
+        assertEquals(app.getString(R.string.qos_value, 2), row.findViewById<TextView>(R.id.subscription_qos).text.toString())
 
         container.getChildAt(0).findViewById<Button>(R.id.remove_button).performClick()
         assertTrue(AppGraph.settings.subscriptions().isEmpty())
@@ -197,15 +209,30 @@ class MainActivityTest {
     @Test
     fun messagesRenderAndClear() {
         val a = launch().get()
-        val text = a.findViewById<TextView>(R.id.messages_text)
-        assertEquals(app.getString(R.string.no_messages), text.text.toString())
+        val list = a.findViewById<LinearLayout>(R.id.messages_container)
+        val empty = a.findViewById<TextView>(R.id.no_messages)
+
+        fun text(
+            row: Int,
+            id: Int,
+        ) = list
+            .getChildAt(row)
+            .findViewById<TextView>(id)
+            .text
+            .toString()
+        assertEquals(View.VISIBLE, empty.visibility)
+        assertEquals(0, list.childCount)
         AppGraph.messageLog.add(ReceivedMessage("t/1", "payload-1", 1, false, 0))
         AppGraph.messageLog.add(ReceivedMessage("t/2", "payload-2", 0, false, 0))
-        val shown = text.text.toString()
-        assertTrue(shown.indexOf("t/2") < shown.indexOf("t/1"))
-        assertTrue(shown.contains("payload-1"))
+        assertEquals(View.GONE, empty.visibility)
+        assertEquals(2, list.childCount)
+        assertEquals("t/2", text(0, R.id.message_topic))
+        assertEquals("t/1", text(1, R.id.message_topic))
+        assertEquals("payload-1", text(1, R.id.message_payload))
+        assertTrue(text(1, R.id.message_meta).endsWith("QoS 1"))
         a.findViewById<Button>(R.id.clear_messages_button).performClick()
-        assertEquals(app.getString(R.string.no_messages), text.text.toString())
+        assertEquals(View.VISIBLE, empty.visibility)
+        assertEquals(0, list.childCount)
     }
 
     @Test
@@ -214,13 +241,24 @@ class MainActivityTest {
         val a = controller.get()
         controller.pause().stop()
         AppGraph.messageLog.add(ReceivedMessage("t", "p", 0, false, 0))
-        assertEquals(app.getString(R.string.no_messages), a.findViewById<TextView>(R.id.messages_text).text.toString())
+        assertEquals(0, a.findViewById<LinearLayout>(R.id.messages_container).childCount)
     }
 
     @Test
     fun opensBrokerSettings() {
         val a = launch().get()
-        a.findViewById<Button>(R.id.settings_button).performClick()
+        a.findViewById<MaterialToolbar>(R.id.toolbar).menu.performIdentifierAction(R.id.action_broker_settings, 0)
         assertEquals(BrokerSettingsActivity::class.java.name, shadowOf(a).nextStartedActivity.component!!.className)
+    }
+
+    @Test
+    fun qosSelectionSurvivesRecreation() {
+        val controller = launch()
+        controller.get().findViewById<QosToggleGroup>(R.id.qos_group).qos = 2
+        controller.get().findViewById<QosToggleGroup>(R.id.filter_qos_group).qos = 9
+        controller.recreate()
+        val a = controller.get()
+        assertEquals(2, a.findViewById<QosToggleGroup>(R.id.qos_group).qos)
+        assertEquals(2, a.findViewById<QosToggleGroup>(R.id.filter_qos_group).qos)
     }
 }

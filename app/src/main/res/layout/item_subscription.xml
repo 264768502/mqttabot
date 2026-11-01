@@ -1,21 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/bg_list_item"
     android:gravity="center_vertical"
-    android:orientation="horizontal">
+    android:minHeight="64dp"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingEnd="4dp">
 
-    <TextView
-        android:id="@+id/subscription_text"
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:fontFamily="monospace" />
+        android:orientation="vertical"
+        android:paddingVertical="8dp">
 
-    <Button
+        <TextView
+            android:id="@+id/subscription_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+        <TextView
+            android:id="@+id/subscription_qos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/remove_button"
-        style="?attr/borderlessButtonStyle"
+        style="@style/Widget.Material3Expressive.Button.IconButton.Standard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/action_remove" />
+        android:contentDescription="@string/action_remove"
+        app:icon="@drawable/ic_delete" />
 </LinearLayout>

@@ -4,12 +4,12 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.CheckBox
+import android.widget.CompoundButton
 import android.widget.EditText
-import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.android.material.textfield.TextInputLayout
 import com.mqttabot.AppGraph
 import com.mqttabot.R
@@ -20,31 +20,33 @@ import com.mqttabot.mqtt.ConfigError
 /** Broker endpoint, credentials and connection options. */
 class BrokerSettingsActivity :
     AppCompatActivity(),
-    AdapterView.OnItemSelectedListener {
-    private lateinit var preset: Spinner
+    AdapterView.OnItemClickListener {
+    private lateinit var preset: MaterialAutoCompleteTextView
+    private lateinit var presetNames: List<String>
     private lateinit var host: EditText
     private lateinit var port: EditText
-    private lateinit var tls: CheckBox
+    private lateinit var tls: CompoundButton
     private lateinit var username: EditText
     private lateinit var password: EditText
     private lateinit var clientId: EditText
     private lateinit var keepAlive: EditText
-    private lateinit var cleanSession: CheckBox
-    private lateinit var autoStart: CheckBox
+    private lateinit var cleanSession: CompoundButton
+    private lateinit var autoStart: CompoundButton
     private lateinit var hostLayout: TextInputLayout
     private lateinit var portLayout: TextInputLayout
     private lateinit var usernameLayout: TextInputLayout
     private lateinit var keepAliveLayout: TextInputLayout
 
-    // Spinner position whose values are currently in the form; 0 = custom.
+    // Preset position whose values are currently in the form; 0 = custom.
     private var appliedPreset = 0
 
     // Ports and timeouts must stay ASCII digits so they parse back.
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_broker_settings)
-        preset = findViewById(R.id.preset_spinner)
+        setEdgeToEdgeContentView(R.layout.activity_broker_settings)
+        findViewById<MaterialToolbar>(R.id.toolbar).setNavigationOnClickListener { finish() }
+        preset = findViewById(R.id.preset_input)
         host = findViewById(R.id.host_input)
         port = findViewById(R.id.port_input)
         tls = findViewById(R.id.tls_check)
@@ -59,11 +61,8 @@ class BrokerSettingsActivity :
         usernameLayout = findViewById(R.id.username_layout)
         keepAliveLayout = findViewById(R.id.keep_alive_layout)
 
-        val names = listOf(getString(R.string.preset_custom)) + BrokerPresets.all.map { it.name }
-        preset.adapter =
-            ArrayAdapter(this, android.R.layout.simple_spinner_item, names).apply {
-                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            }
+        presetNames = listOf(getString(R.string.preset_custom)) + BrokerPresets.all.map { it.name }
+        preset.setSimpleItems(presetNames.toTypedArray())
         val config = AppGraph.settings.loadBroker()
         host.setText(config.host)
         port.setText(config.port.toString())
@@ -75,13 +74,13 @@ class BrokerSettingsActivity :
         cleanSession.isChecked = config.cleanSession
         autoStart.isChecked = AppGraph.settings.autoStartOnBoot
         appliedPreset = BrokerPresets.indexOf(config) + 1
-        preset.setSelection(appliedPreset)
-        preset.onItemSelectedListener = this
+        preset.setText(presetNames[appliedPreset], false)
+        preset.onItemClickListener = this
         findViewById<Button>(R.id.save_button).setOnClickListener { save() }
     }
 
     @SuppressLint("SetTextI18n")
-    override fun onItemSelected(
+    override fun onItemClick(
         parent: AdapterView<*>?,
         view: View?,
         position: Int,
@@ -99,8 +98,6 @@ class BrokerSettingsActivity :
             password.setText(p.password)
         }
     }
-
-    override fun onNothingSelected(parent: AdapterView<*>?) = Unit
 
     private fun save() {
         val config =

@@ -4,9 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.widget.Button
-import android.widget.CheckBox
+import android.widget.CompoundButton
 import android.widget.EditText
-import android.widget.Spinner
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.android.material.textfield.TextInputLayout
@@ -19,6 +18,7 @@ import com.mqttabot.mqtt.ConnectionStatus
 import com.mqttabot.mqtt.Observable
 import com.mqttabot.testutil.FakeGateway
 import com.mqttabot.testutil.ManualTaskRunner
+import com.mqttabot.ui.QosToggleGroup
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -47,8 +47,8 @@ class TaskerActivitiesTest {
         val a = launch<PublishActionActivity>(TaskerApi.ACTION_EDIT_SETTING)
         a.findViewById<EditText>(R.id.topic_input).setText(" home/%room/cmd ")
         a.findViewById<EditText>(R.id.payload_input).setText("%par1")
-        a.findViewById<Spinner>(R.id.qos_spinner).setSelection(2)
-        a.findViewById<CheckBox>(R.id.retain_check).isChecked = true
+        a.findViewById<QosToggleGroup>(R.id.qos_group).qos = 2
+        a.findViewById<CompoundButton>(R.id.retain_check).isChecked = true
         a.findViewById<Button>(R.id.save_button).performClick()
 
         val shadow = shadowOf(a)
@@ -67,8 +67,8 @@ class TaskerActivitiesTest {
         val a = launch<PublishActionActivity>(TaskerApi.ACTION_EDIT_SETTING, PublishActionConfig("t", "p", 9, true).toBundle())
         assertEquals("t", a.findViewById<EditText>(R.id.topic_input).text.toString())
         assertEquals("p", a.findViewById<EditText>(R.id.payload_input).text.toString())
-        assertEquals(2, a.findViewById<Spinner>(R.id.qos_spinner).selectedItemPosition)
-        assertTrue(a.findViewById<CheckBox>(R.id.retain_check).isChecked)
+        assertEquals(2, a.findViewById<QosToggleGroup>(R.id.qos_group).qos)
+        assertTrue(a.findViewById<CompoundButton>(R.id.retain_check).isChecked)
 
         a.findViewById<EditText>(R.id.topic_input).setText("bad/#")
         a.findViewById<Button>(R.id.save_button).performClick()
@@ -100,10 +100,10 @@ class TaskerActivitiesTest {
         AppGraph.controller = controller
 
         val a = launch<EventConfigActivity>(TaskerApi.ACTION_EDIT_EVENT)
-        assertEquals(1, a.findViewById<Spinner>(R.id.qos_spinner).selectedItemPosition)
+        assertEquals(1, a.findViewById<QosToggleGroup>(R.id.qos_group).qos)
         a.findViewById<EditText>(R.id.filter_input).setText("sensors/+/temp")
         a.findViewById<EditText>(R.id.pattern_input).setText("^\\d+")
-        a.findViewById<Spinner>(R.id.qos_spinner).setSelection(2)
+        a.findViewById<QosToggleGroup>(R.id.qos_group).qos = 2
         a.findViewById<Button>(R.id.save_button).performClick()
 
         val shadow = shadowOf(a)
@@ -126,7 +126,7 @@ class TaskerActivitiesTest {
         val a = launch<EventConfigActivity>(TaskerApi.ACTION_EDIT_EVENT, EventFilterConfig("a/#", "x", 7).toBundle())
         assertEquals("a/#", a.findViewById<EditText>(R.id.filter_input).text.toString())
         assertEquals("x", a.findViewById<EditText>(R.id.pattern_input).text.toString())
-        assertEquals(2, a.findViewById<Spinner>(R.id.qos_spinner).selectedItemPosition)
+        assertEquals(2, a.findViewById<QosToggleGroup>(R.id.qos_group).qos)
         a.findViewById<Button>(R.id.save_button).performClick()
         assertEquals(listOf(Subscription("a/#", 2)), AppGraph.settings.subscriptions())
     }

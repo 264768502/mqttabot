@@ -7,11 +7,17 @@
     <string name="section_publish">Publish</string>
     <string name="section_subscriptions">Subscriptions</string>
     <string name="section_messages">Received messages</string>
+    <string name="section_server">Server</string>
+    <string name="section_auth">Authentication</string>
+    <string name="section_session">Session</string>
 
     <string name="status_disconnected">Disconnected</string>
     <string name="status_connecting">Connecting to %1$s…</string>
     <string name="status_connected">Connected to %1$s</string>
     <string name="status_waiting_retry">Reconnecting (%1$s)</string>
+    <string name="state_connected">Connected</string>
+    <string name="state_connecting">Connecting…</string>
+    <string name="state_reconnecting">Reconnecting…</string>
 
     <string name="action_start_service">Start subscription service</string>
     <string name="action_stop_service">Stop subscription service</string>
@@ -22,6 +28,7 @@
     <string name="action_clear">Clear</string>
     <string name="action_save">Save</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_back">Navigate up</string>
 
     <string name="hint_topic">Topic</string>
     <string name="hint_payload">Payload</string>
@@ -46,8 +53,8 @@
     <string name="publish_failed">Publish failed: %1$s</string>
     <string name="no_subscriptions">No subscriptions yet.</string>
     <string name="no_messages">No messages received yet.</string>
-    <string name="subscription_item">%1$s (QoS %2$d)</string>
-    <string name="message_item">%1$s  %2$s  [QoS %3$d]\n%4$s</string>
+    <string name="qos_value" translatable="false">QoS %1$d</string>
+    <string name="message_meta" translatable="false">%1$s · QoS %2$d</string>
 
     <string name="error_topic">Enter a topic without + or # wildcards</string>
     <string name="error_filter">Invalid topic filter</string>

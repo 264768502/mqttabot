@@ -5,10 +5,16 @@
     <string name="section_publish">发布消息</string>
     <string name="section_subscriptions">订阅</string>
     <string name="section_messages">收到的消息</string>
+    <string name="section_server">服务器</string>
+    <string name="section_auth">身份验证</string>
+    <string name="section_session">会话</string>
     <string name="status_disconnected">未连接</string>
     <string name="status_connecting">正在连接 %1$s…</string>
     <string name="status_connected">已连接 %1$s</string>
     <string name="status_waiting_retry">正在重连（%1$s）</string>
+    <string name="state_connected">已连接</string>
+    <string name="state_connecting">正在连接…</string>
+    <string name="state_reconnecting">正在重新连接…</string>
     <string name="action_start_service">启动订阅服务</string>
     <string name="action_stop_service">停止订阅服务</string>
     <string name="action_stop">停止</string>
@@ -18,6 +24,7 @@
     <string name="action_clear">清空</string>
     <string name="action_save">保存</string>
     <string name="action_cancel">取消</string>
+    <string name="action_back">返回</string>
     <string name="hint_topic">主题</string>
     <string name="hint_payload">消息内容</string>
     <string name="hint_filter">主题过滤器（支持 + 和 #）</string>
@@ -40,8 +47,6 @@
     <string name="publish_failed">发布失败：%1$s</string>
     <string name="no_subscriptions">暂无订阅。</string>
     <string name="no_messages">尚未收到消息。</string>
-    <string name="subscription_item">%1$s（QoS %2$d）</string>
-    <string name="message_item">%1$s  %2$s  [QoS %3$d]\n%4$s</string>
     <string name="error_topic">请输入不含 + 或 # 通配符的主题</string>
     <string name="error_filter">主题过滤器无效</string>
     <string name="error_pattern">正则表达式无效</string>
