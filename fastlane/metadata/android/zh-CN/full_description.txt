@@ -1,0 +1,10 @@
+MqttABot 是一个轻量级 MQTT 客户端，把手机连接到 MQTT 服务器和 Tasker。
+
+功能：
+* 发布消息，可指定任意主题、内容、QoS 和保留标志。
+* 后台订阅服务：前台服务通过常驻通知保持连接，网络中断后自动重连并重新订阅，可设置开机自启。
+* 内置常见公共服务器（Eclipse Mosquitto、HiveMQ、EMQX、Eclipse IoT，支持 TCP 和 TLS），也可自定义服务器，支持用户名、密码、客户端 ID、心跳间隔和清除会话设置。
+* Tasker 动作“MqttABot：发布消息”：在 Tasker 任务中发送 MQTT 消息，主题和内容支持 Tasker 变量。
+* Tasker 事件“MqttABot：收到消息”：收到订阅的消息时触发 Tasker 配置文件，支持主题通配符（+ 和 #）和可选的内容正则，并设置 %mqtt_topic、%mqtt_payload、%mqtt_qos、%mqtt_retained 和 %mqtt_received_at 变量。
+
+支持 Android 7.0 及以上版本。基于 MIT 许可证开源，无广告、无追踪。

@@ -3,13 +3,6 @@ plugins {
     jacoco
 }
 
-// Release builds pass -PappVersion=X.Y.Z[-suffix] (from the git tag); versionCode is derived from it.
-val appVersion = providers.gradleProperty("appVersion").getOrElse("1.0.0")
-val appVersionCode =
-    requireNotNull(Regex("""(\d+)\.(\d+)\.(\d+)(-[0-9A-Za-z.-]+)?""").matchEntire(appVersion)) {
-        "appVersion must look like 1.2.3 or 1.2.3-beta.1, got '$appVersion'"
-    }.groupValues.let { (_, major, minor, patch) -> major.toInt() * 1_000_000 + minor.toInt() * 1_000 + patch.toInt() }
-
 // Release signing key, supplied by CI via environment variables; falls back to the debug key.
 val releaseKeystore = providers.environmentVariable("SIGNING_KEYSTORE_PATH").orNull
 
@@ -22,8 +15,10 @@ android {
         applicationId = "com.mqttabot"
         minSdk = 24
         targetSdk = 36
-        versionCode = appVersionCode
-        versionName = appVersion
+        // Literal values so F-Droid can read them; the release workflow bumps them and checks
+        // them against the tag. versionCode = major * 1_000_000 + minor * 1_000 + patch.
+        versionCode = 1000000
+        versionName = "1.0.0"
     }
 
     signingConfigs {
@@ -103,15 +98,13 @@ dependencies {
     }
 }
 
+val mavenCentralMirror = providers.gradleProperty("mavenCentralMirror").orNull
 val screenshots = providers.gradleProperty("screenshots").isPresent
-val screenshotDir = rootDir.resolve("docs/screenshots").absolutePath
+val screenshotDir = rootDir.resolve("fastlane/metadata/android").absolutePath
 
 tasks.withType<Test>().configureEach {
-    // Robolectric fetches android-all jars itself; use the same Maven Central mirror.
-    systemProperty(
-        "robolectric.dependency.repo.url",
-        "https://maven-central.storage-download.googleapis.com/maven2",
-    )
+    // Robolectric fetches android-all jars itself; point it at the optional mirror too.
+    mavenCentralMirror?.let { systemProperty("robolectric.dependency.repo.url", it) }
     maxHeapSize = "3g"
     // Robolectric's SDK 36 runtime touches JDK internals.
     jvmArgs("--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")

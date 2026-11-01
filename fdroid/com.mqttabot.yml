@@ -1,0 +1,28 @@
+# F-Droid build metadata. Submit as metadata/com.mqttabot.yml to
+# https://gitlab.com/fdroid/fdroiddata (see README "Publishing to F-Droid").
+Categories:
+  - Connectivity
+  - System
+License: MIT
+AuthorName: '264768502'
+SourceCode: https://github.com/264768502/mqttabot
+IssueTracker: https://github.com/264768502/mqttabot/issues
+Changelog: https://github.com/264768502/mqttabot/releases
+
+AutoName: MqttABot
+
+RepoType: git
+Repo: https://github.com/264768502/mqttabot.git
+
+Builds:
+  - versionName: 1.0.0
+    versionCode: 1000000
+    commit: v1.0.0
+    subdir: app
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$
+CurrentVersion: 1.0.0
+CurrentVersionCode: 1000000

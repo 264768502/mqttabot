@@ -31,12 +31,12 @@ import java.io.File
 import java.util.Calendar
 
 /**
- * Renders README screenshots with Robolectric's native graphics. Runs only with
- * `./gradlew :app:testDebugUnitTest -Pscreenshots`; writes PNGs to docs/screenshots/.
+ * Renders store/README screenshots with Robolectric's native graphics. Runs only with
+ * `./gradlew :app:testDebugUnitTest -Pscreenshots`; writes into fastlane/metadata/android/.
  */
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 abstract class ScreenshotTest(
-    private val suffix: String,
+    private val locale: String,
 ) {
     private val app = ApplicationProvider.getApplicationContext<android.app.Application>()
 
@@ -72,12 +72,12 @@ abstract class ScreenshotTest(
         a.findViewById<EditText>(R.id.topic_input).setText("home/livingroom/light")
         a.findViewById<EditText>(R.id.payload_input).setText("ON")
         a.findViewById<Spinner>(R.id.qos_spinner).setSelection(1)
-        capture(a, "main")
+        capture(a, "1_main")
     }
 
     @Test
     fun brokerSettings() {
-        capture(Robolectric.buildActivity(BrokerSettingsActivity::class.java).setup().get(), "broker-settings")
+        capture(Robolectric.buildActivity(BrokerSettingsActivity::class.java).setup().get(), "2_broker_settings")
     }
 
     @Test
@@ -86,7 +86,7 @@ abstract class ScreenshotTest(
         val a = Robolectric.buildActivity(EventConfigActivity::class.java, intent).setup().get()
         a.findViewById<EditText>(R.id.filter_input).setText("home/+/temperature")
         a.findViewById<EditText>(R.id.pattern_input).setText("^\\d+(\\.\\d+)?$")
-        capture(a, "tasker-event")
+        capture(a, "3_tasker_event")
     }
 
     private fun capture(
@@ -97,16 +97,35 @@ abstract class ScreenshotTest(
         val view = activity.window.decorView
         val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
         view.draw(Canvas(bitmap))
-        val dir = File(checkNotNull(System.getProperty("screenshot.dir")) { "Run with -Pscreenshots" })
-        dir.mkdirs()
-        File(dir, "$name$suffix.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        write(bitmap, "images/phoneScreenshots/$name.png")
+    }
+
+    protected fun write(
+        bitmap: Bitmap,
+        path: String,
+    ) {
+        val root = File(checkNotNull(System.getProperty("screenshot.dir")) { "Run with -Pscreenshots" })
+        val file = File(root, "$locale/$path")
+        file.parentFile!!.mkdirs()
+        file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 }
 
 @RunWith(AndroidJUnit4::class)
 @Config(qualifiers = "en-rUS-w400dp-h880dp-xhdpi")
-class EnglishScreenshotTest : ScreenshotTest("")
+class EnglishScreenshotTest : ScreenshotTest("en-US") {
+    /** 512x512 store icon rendered from the adaptive launcher icon. */
+    @Test
+    fun icon() {
+        val drawable =
+            checkNotNull(ApplicationProvider.getApplicationContext<android.app.Application>().getDrawable(R.drawable.ic_launcher))
+        val bitmap = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888)
+        drawable.setBounds(0, 0, 512, 512)
+        drawable.draw(Canvas(bitmap))
+        write(bitmap, "images/icon.png")
+    }
+}
 
 @RunWith(AndroidJUnit4::class)
 @Config(qualifiers = "zh-rCN-w400dp-h880dp-xhdpi")
-class ChineseScreenshotTest : ScreenshotTest("-zh")
+class ChineseScreenshotTest : ScreenshotTest("zh-CN")

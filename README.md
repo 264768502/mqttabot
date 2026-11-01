@@ -22,7 +22,7 @@ Android MQTT client + persistent subscription service + Tasker plugin. Written e
 
 | Main screen | Broker settings | Tasker event |
 | :---: | :---: | :---: |
-| <img src="docs/screenshots/main.png" width="260" alt="Main screen"> | <img src="docs/screenshots/broker-settings.png" width="260" alt="Broker settings"> | <img src="docs/screenshots/tasker-event.png" width="260" alt="Tasker event configuration"> |
+| <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1_main.png" width="260" alt="Main screen"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2_broker_settings.png" width="260" alt="Broker settings"> | <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3_tasker_event.png" width="260" alt="Tasker event configuration"> |
 
 ## Features
 
@@ -60,7 +60,7 @@ Requires JDK 17+ and the Android SDK (`platforms;android-37.0`, `build-tools;37.
 ./gradlew testDebugUnitTest                     # all JVM tests (unit + end-to-end)
 ./gradlew jacocoUnitTestCoverageVerification -PskipE2e   # verify 100% coverage with unit tests only
 ./gradlew testDebugUnitTest --tests 'com.mqttabot.e2e.*'  # end-to-end tests only
-./gradlew testDebugUnitTest -Pscreenshots               # re-render docs/screenshots/
+./gradlew testDebugUnitTest -Pscreenshots               # re-render screenshots + icon in fastlane/
 ```
 
 Coverage report: `app/build/reports/jacoco/jacocoUnitTestReport/html/index.html`. The gate requires 100% instruction, branch, line, method and class coverage (only generated `R`/`BuildConfig` are excluded).
@@ -85,10 +85,10 @@ Coverage report: `app/build/reports/jacoco/jacocoUnitTestReport/html/index.html`
 
 `.github/workflows/release.yml` builds and publishes a GitHub Release with `mqttabot-<version>-release.apk`, `mqttabot-<version>-debug.apk` and `SHA256SUMS.txt`. Before building it runs the format check, lint, all tests and the coverage gate. Two ways to start it:
 
-- Push a tag: `git tag v1.2.0 && git push origin v1.2.0`
-- Run the **Release** workflow manually (Actions → Release → Run workflow) with a version such as `1.2.0`; it creates the tag itself.
+- **Recommended:** run the **Release** workflow manually (Actions → Release → Run workflow) with a version such as `1.2.0`. It updates `versionName`/`versionCode` in `app/build.gradle.kts`, commits that to `main`, creates the tag and publishes.
+- Or bump `versionName`/`versionCode` in `app/build.gradle.kts` yourself, commit, then push a tag: `git tag v1.2.0 && git push origin v1.2.0`. The workflow fails if the tag doesn't match the source.
 
-`versionName` is the tag without the `v`, and `versionCode` = `major × 1,000,000 + minor × 1,000 + patch`. Versions with a suffix (e.g. `1.3.0-beta.1`) are published as pre-releases.
+The version lives in the source (F-Droid reads it from there): `versionName` is the tag without the `v`, and `versionCode` = `major × 1,000,000 + minor × 1,000 + patch`. Versions with a suffix (e.g. `1.3.0-beta.1`) are published as pre-releases. Optionally add release notes for the stores in `fastlane/metadata/android/<locale>/changelogs/<versionCode>.txt`.
 
 **Signing.** Add these repository secrets (Settings → Secrets and variables → Actions) to sign release APKs with your own key:
 
@@ -99,7 +99,24 @@ Coverage report: `app/build/reports/jacoco/jacocoUnitTestReport/html/index.html`
 | `SIGNING_KEY_ALIAS` | Key alias |
 | `SIGNING_KEY_PASSWORD` | Key password (same as the keystore password for PKCS12 keystores) |
 
-Without them, the release APK is signed with the runner's throwaway debug key, and the release notes say so. Such APKs install fine, but each release has a different signature, so users can't upgrade from one to the next without uninstalling first.
+Without them, final releases are refused. Pre-releases are signed with the runner's throwaway debug key, and the release notes say so; such APKs install, but each one has a different signature, so users can't upgrade between them without uninstalling.
+
+## F-Droid
+
+MqttABot is prepared for the official [F-Droid](https://f-droid.org) repository. F-Droid builds the app itself from the tagged source and signs it with F-Droid's key, so its APKs can't be upgraded in place by GitHub release APKs (or the other way round).
+
+- **Store listing:** `fastlane/metadata/android/{en-US,zh-CN}/` — title, short and full description, icon, screenshots and changelogs. F-Droid picks these up from the repository.
+- **Build metadata:** [`fdroid/com.mqttabot.yml`](fdroid/com.mqttabot.yml). It builds `app` from tag `v<version>` and uses `AutoUpdateMode: Version` with `UpdateCheckMode: Tags`, so every new `vX.Y.Z` tag is picked up automatically after inclusion.
+- **Checked with fdroidserver:** `fdroid lint` passes, and `fdroid build` (source scan + build from the tag) succeeds locally.
+
+**Submitting (one time):**
+
+1. Make sure the version's tag exists on GitHub (e.g. `v1.0.0`).
+2. Fork [fdroiddata](https://gitlab.com/fdroid/fdroiddata) on GitLab.com and copy `fdroid/com.mqttabot.yml` to `metadata/com.mqttabot.yml` in your fork.
+3. Open a merge request with the "App inclusion" template. F-Droid's CI builds it; reviewers may ask for changes.
+4. After it is merged, new versions only need a new tag; F-Droid publishes them within a few days.
+
+Keep the source free of non-free dependencies and of Maven repositories other than Google, Maven Central and the Gradle plugin portal; F-Droid's scanner rejects builds that use others.
 
 ## Notes
 

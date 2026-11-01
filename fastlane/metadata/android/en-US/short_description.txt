@@ -1,0 +1,1 @@
+MQTT client with a background subscription service and Tasker plugin

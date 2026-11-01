@@ -22,7 +22,7 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 
 | 主界面 | 服务器设置 | Tasker 事件 |
 | :---: | :---: | :---: |
-| <img src="docs/screenshots/main-zh.png" width="260" alt="主界面"> | <img src="docs/screenshots/broker-settings-zh.png" width="260" alt="服务器设置"> | <img src="docs/screenshots/tasker-event-zh.png" width="260" alt="Tasker 事件配置"> |
+| <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/1_main.png" width="260" alt="主界面"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/2_broker_settings.png" width="260" alt="服务器设置"> | <img src="fastlane/metadata/android/zh-CN/images/phoneScreenshots/3_tasker_event.png" width="260" alt="Tasker 事件配置"> |
 
 ## 功能
 
@@ -60,7 +60,7 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 ./gradlew testDebugUnitTest                     # 全部 JVM 测试（单元 + 端到端）
 ./gradlew jacocoUnitTestCoverageVerification -PskipE2e   # 只用单元测试验证 100% 覆盖率
 ./gradlew testDebugUnitTest --tests 'com.mqttabot.e2e.*'  # 只运行端到端测试
-./gradlew testDebugUnitTest -Pscreenshots               # 重新生成 docs/screenshots/
+./gradlew testDebugUnitTest -Pscreenshots               # 重新生成 fastlane/ 中的截图和图标
 ```
 
 覆盖率报告：`app/build/reports/jacoco/jacocoUnitTestReport/html/index.html`。门禁要求指令、分支、行、方法、类覆盖率均为 100%（仅排除生成的 `R`/`BuildConfig`）。
@@ -85,10 +85,10 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 
 `.github/workflows/release.yml` 会构建并发布 GitHub Release，附带 `mqttabot-<版本>-release.apk`、`mqttabot-<版本>-debug.apk` 和 `SHA256SUMS.txt`。构建前会运行格式检查、lint、全部测试和覆盖率门禁。两种触发方式：
 
-- 推送 tag：`git tag v1.2.0 && git push origin v1.2.0`
-- 手动运行 **Release** workflow（Actions → Release → Run workflow），填写版本号如 `1.2.0`，workflow 会自动创建 tag。
+- **推荐：** 手动运行 **Release** workflow（Actions → Release → Run workflow），填写版本号如 `1.2.0`。workflow 会更新 `app/build.gradle.kts` 中的 `versionName`/`versionCode`，提交到 `main`，创建 tag 并发布。
+- 或者自己修改 `app/build.gradle.kts` 中的 `versionName`/`versionCode` 并提交，再推送 tag：`git tag v1.2.0 && git push origin v1.2.0`。tag 与源码中的版本不一致时 workflow 会失败。
 
-`versionName` 为去掉 `v` 的 tag，`versionCode` = `主版本 × 1,000,000 + 次版本 × 1,000 + 修订号`。带后缀的版本（如 `1.3.0-beta.1`）会发布为预发布版本。
+版本号保存在源码中（F-Droid 从源码读取）：`versionName` 为去掉 `v` 的 tag，`versionCode` = `主版本 × 1,000,000 + 次版本 × 1,000 + 修订号`。带后缀的版本（如 `1.3.0-beta.1`）会发布为预发布版本。可选：在 `fastlane/metadata/android/<语言>/changelogs/<versionCode>.txt` 中为应用商店添加更新说明。
 
 **签名。** 在仓库 Secrets（Settings → Secrets and variables → Actions）中添加以下内容，即可用自己的密钥签名 release APK：
 
@@ -99,7 +99,24 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 | `SIGNING_KEY_ALIAS` | 密钥别名 |
 | `SIGNING_KEY_PASSWORD` | 密钥密码（PKCS12 keystore 与 keystore 密码相同） |
 
-未配置时，release APK 使用 CI 机器临时生成的 debug 密钥签名，release 说明中会注明。这样的 APK 可以正常安装，但每次发布的签名都不同，用户升级到新版本前需要先卸载旧版本。
+未配置时，正式版本会被拒绝发布。预发布版本使用 CI 机器临时生成的 debug 密钥签名，release 说明中会注明；这样的 APK 可以安装，但每次签名都不同，用户在它们之间升级前需要先卸载。
+
+## F-Droid
+
+MqttABot 已为官方 [F-Droid](https://f-droid.org) 仓库做好准备。F-Droid 会根据 tag 对应的源码自行构建并用 F-Droid 的密钥签名，因此 F-Droid 的 APK 与 GitHub release 的 APK 不能互相覆盖升级。
+
+- **商店信息：** `fastlane/metadata/android/{en-US,zh-CN}/` —— 标题、简短描述和完整描述、图标、截图和更新说明。F-Droid 会直接从仓库读取。
+- **构建元数据：** [`fdroid/com.mqttabot.yml`](fdroid/com.mqttabot.yml)。它从 tag `v<版本>` 构建 `app`，并使用 `AutoUpdateMode: Version` 和 `UpdateCheckMode: Tags`，收录后每个新的 `vX.Y.Z` tag 都会被自动识别。
+- **已用 fdroidserver 验证：** `fdroid lint` 通过，本地 `fdroid build`（源码扫描 + 从 tag 构建）成功。
+
+**提交收录（一次性）：**
+
+1. 确认该版本的 tag 已在 GitHub 上（例如 `v1.0.0`）。
+2. 在 GitLab.com 上 fork [fdroiddata](https://gitlab.com/fdroid/fdroiddata)，把 `fdroid/com.mqttabot.yml` 复制为 fork 中的 `metadata/com.mqttabot.yml`。
+3. 使用 "App inclusion" 模板创建 merge request。F-Droid 的 CI 会构建它，审核人员可能会提出修改意见。
+4. 合并后，新版本只需要推送新的 tag，F-Droid 会在几天内发布。
+
+源码中不能引入非自由依赖，也不能使用 Google、Maven Central 和 Gradle 插件门户以外的 Maven 仓库，否则 F-Droid 的扫描器会拒绝构建。
 
 ## 说明
 

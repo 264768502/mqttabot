@@ -1,0 +1,1 @@
+First release: MQTT publish and subscribe, background subscription service, built-in public brokers with username/password, and Tasker publish action and message-received event.
