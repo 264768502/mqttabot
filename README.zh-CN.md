@@ -57,7 +57,7 @@ Android MQTT 客户端 + 常驻订阅服务 + Tasker 插件。纯 Kotlin 实现�
 | 功能 | 说明 |
 | --- | --- |
 | 发送消息 | 主界面填写 topic / payload / QoS / retain 后发送。订阅服务运行时复用其长连接，否则建立一次性连接。 |
-| 订阅服务 | `MqttService` 前台服务（`specialUse` 类型），常驻通知显示连接状态并提供“停止”按钮；断线自动重连并重新订阅；可设置开机自启。 |
+| 订阅服务 | `MqttService` 前台服务（`specialUse` 类型），常驻通知显示连接状态并提供“停止”按钮；断线自动重连并重新订阅；可设置开机自启；可选在收到消息时发送通知（默认关闭，每个主题只保留最新一条）。 |
 | 内置服务器 | test.mosquitto.org（TCP / TLS / 带认证 1884）、broker.hivemq.com、broker.emqx.io、mqtt.eclipseprojects.io（TCP 与 TLS），也可自定义；支持用户名、密码、Client ID、Keep-alive、Clean session。 |
 | Tasker 动作 | “MqttABot: Publish”——在 Tasker 中发送 MQTT 消息，topic 与 payload 支持 Tasker `%变量`。 |
 | Tasker 事件 | “MqttABot: Message received”——订阅到的消息作为 Tasker 触发器，支持 topic 通配符（`+`、`#`）和可选的 payload 正则。保存时自动把过滤器加入订阅列表。 |

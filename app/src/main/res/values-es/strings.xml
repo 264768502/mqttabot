@@ -41,6 +41,7 @@
     <string name="label_tls">Usar TLS (ssl://)</string>
     <string name="label_clean_session">Sesión limpia</string>
     <string name="label_auto_start">Iniciar el servicio de suscripción al arrancar</string>
+    <string name="label_notify_messages">Notificar al recibir mensajes</string>
     <string name="preset_custom">Personalizado</string>
     <string name="publish_sending">Enviando…</string>
     <string name="publish_ok">Publicado en %1$s</string>
@@ -56,6 +57,7 @@
     <string name="error_username">Una contraseña requiere un nombre de usuario</string>
     <string name="notification_channel_name">Servicio de suscripción MQTT</string>
     <string name="notification_title">MqttABot está escuchando</string>
+    <string name="message_channel_name">Mensajes recibidos</string>
     <string name="tasker_publish_label">MqttABot: Publicar</string>
     <string name="tasker_event_label">MqttABot: Mensaje recibido</string>
     <string name="tasker_publish_hint">El tema y el contenido pueden contener %variables de Tasker.</string>

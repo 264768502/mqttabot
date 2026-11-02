@@ -50,6 +50,10 @@ class SettingsRepository(
         get() = prefs.getBoolean(KEY_AUTO_START, false)
         set(value) = prefs.edit { putBoolean(KEY_AUTO_START, value) }
 
+    var notifyOnMessage: Boolean
+        get() = prefs.getBoolean(KEY_NOTIFY_ON_MESSAGE, false)
+        set(value) = prefs.edit { putBoolean(KEY_NOTIFY_ON_MESSAGE, value) }
+
     var diagnosticLogging: Boolean
         get() = prefs.getBoolean(KEY_DIAGNOSTIC_LOGGING, false)
         set(value) = prefs.edit { putBoolean(KEY_DIAGNOSTIC_LOGGING, value) }
@@ -107,6 +111,7 @@ class SettingsRepository(
         const val KEY_KEEP_ALIVE = "keep_alive"
         const val KEY_CLEAN_SESSION = "clean_session"
         const val KEY_AUTO_START = "auto_start_on_boot"
+        const val KEY_NOTIFY_ON_MESSAGE = "notify_on_message"
         const val KEY_THEME = "theme_mode"
         const val KEY_LANGUAGE = "language"
         const val KEY_DIAGNOSTIC_LOGGING = "diagnostic_logging"

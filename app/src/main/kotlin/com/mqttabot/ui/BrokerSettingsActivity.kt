@@ -77,6 +77,7 @@ const val TAG_CLIENT_ID = "client_id"
 const val TAG_KEEP_ALIVE = "keep_alive"
 const val TAG_CLEAN_SESSION = "clean_session"
 const val TAG_AUTO_START = "auto_start"
+const val TAG_NOTIFY_MESSAGES = "notify_messages"
 const val TAG_SAVE = "save"
 
 private const val TAG = "BrokerSettings"
@@ -107,6 +108,7 @@ fun BrokerSettingsScreen(onDone: () -> Unit) {
     var keepAlive by rememberSaveable { mutableStateOf(saved.keepAliveSeconds.toString()) }
     var cleanSession by rememberSaveable { mutableStateOf(saved.cleanSession) }
     var autoStart by rememberSaveable { mutableStateOf(AppGraph.settings.autoStartOnBoot) }
+    var notifyMessages by rememberSaveable { mutableStateOf(AppGraph.settings.notifyOnMessage) }
     // Preset whose values are in the form; 0 = custom.
     var preset by rememberSaveable { mutableIntStateOf(BrokerPresets.indexOf(saved) + 1) }
     var error by rememberSaveable { mutableStateOf<ConfigError?>(null) }
@@ -143,9 +145,10 @@ fun BrokerSettingsScreen(onDone: () -> Unit) {
             AppLog.i(TAG, "Not saved: invalid $error")
             return
         }
-        AppLog.i(TAG, "Saved: ${Diagnostics.describe(config)}, start on boot: $autoStart")
+        AppLog.i(TAG, "Saved: ${Diagnostics.describe(config)}, start on boot: $autoStart, notify on message: $notifyMessages")
         AppGraph.settings.saveBroker(config)
         AppGraph.settings.autoStartOnBoot = autoStart
+        AppGraph.settings.notifyOnMessage = notifyMessages
         AppGraph.controller?.reconnect()
         onDone()
     }
@@ -237,6 +240,7 @@ fun BrokerSettingsScreen(onDone: () -> Unit) {
             )
             SwitchRow(stringResource(R.string.label_clean_session), cleanSession, { cleanSession = it }, TAG_CLEAN_SESSION)
             SwitchRow(stringResource(R.string.label_auto_start), autoStart, { autoStart = it }, TAG_AUTO_START)
+            SwitchRow(stringResource(R.string.label_notify_messages), notifyMessages, { notifyMessages = it }, TAG_NOTIFY_MESSAGES)
 
             Button(
                 onClick = ::save,

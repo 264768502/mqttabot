@@ -54,6 +54,14 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun notifyOnMessageFlag() {
+        val repo = SettingsRepository(context)
+        assertFalse(repo.notifyOnMessage)
+        repo.notifyOnMessage = true
+        assertTrue(SettingsRepository(context).notifyOnMessage)
+    }
+
+    @Test
     fun diagnosticLoggingFlag() {
         val repo = SettingsRepository(context)
         assertFalse(repo.diagnosticLogging)

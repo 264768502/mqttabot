@@ -41,6 +41,7 @@
     <string name="label_tls">使用 TLS（ssl://）</string>
     <string name="label_clean_session">清除工作階段</string>
     <string name="label_auto_start">開機時自動啟動訂閱服務</string>
+    <string name="label_notify_messages">收到訊息時發送通知</string>
     <string name="preset_custom">自訂</string>
     <string name="publish_sending">傳送中…</string>
     <string name="publish_ok">已發佈至 %1$s</string>
@@ -56,6 +57,7 @@
     <string name="error_username">設定密碼時必須填寫使用者名稱</string>
     <string name="notification_channel_name">MQTT 訂閱服務</string>
     <string name="notification_title">MqttABot 正在監聽</string>
+    <string name="message_channel_name">收到的訊息</string>
     <string name="tasker_publish_label">MqttABot：發佈訊息</string>
     <string name="tasker_event_label">MqttABot：收到訊息</string>
     <string name="tasker_publish_hint">主題和內容可以包含 Tasker %變數。</string>

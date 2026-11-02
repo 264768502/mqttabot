@@ -79,6 +79,7 @@ class BrokerSettingsActivityTest {
     fun loadsCurrentSettingsAndMatchingPreset() {
         AppGraph.settings.saveBroker(BrokerConfig("broker.emqx.io", 8883, true, "u", "p", "cid", 15, false))
         AppGraph.settings.autoStartOnBoot = true
+        AppGraph.settings.notifyOnMessage = true
         launch()
         assertEquals("broker.emqx.io", node(TAG_HOST).text())
         assertEquals("8883", node(TAG_PORT).text())
@@ -88,6 +89,7 @@ class BrokerSettingsActivityTest {
         assertEquals("15", node(TAG_KEEP_ALIVE).text())
         node(TAG_CLEAN_SESSION).assertIsOff()
         node(TAG_AUTO_START).assertIsOn()
+        node(TAG_NOTIFY_MESSAGES).assertIsOn()
         val expected = BrokerPresets.all.first { it.host == "broker.emqx.io" && it.tls }
         assertEquals(expected.name, node(TAG_PRESET).text())
     }
@@ -152,10 +154,12 @@ class BrokerSettingsActivityTest {
         set(TAG_KEEP_ALIVE, "45")
         node(TAG_CLEAN_SESSION).performClick()
         node(TAG_AUTO_START).performClick()
+        node(TAG_NOTIFY_MESSAGES).assertIsOff().performClick()
         save()
         assertFinished()
         assertEquals(BrokerConfig("my.host", 1884, false, "user", "secret", "my-id", 45, false), AppGraph.settings.loadBroker())
         assertTrue(AppGraph.settings.autoStartOnBoot)
+        assertTrue(AppGraph.settings.notifyOnMessage)
         assertEquals(2, gateways.size)
         assertEquals("my.host", gateways.last().connectedWith!!.host)
     }

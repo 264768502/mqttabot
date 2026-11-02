@@ -124,6 +124,45 @@ class MqttServiceTest {
     }
 
     @Test
+    fun messageNotificationsOffByDefault() {
+        startService()
+        gateways.single().listener!!.onMessage(ReceivedMessage("a", "b", 0, false, 1))
+        val nm = shadowOf(app.getSystemService(NotificationManager::class.java))
+        assertNull(nm.getNotification("a", MessageNotifications.NOTIFICATION_ID))
+    }
+
+    @Test
+    fun messageNotificationsPerTopicWhenEnabled() {
+        AppGraph.settings.notifyOnMessage = true
+        startService()
+        val listener = gateways.single().listener!!
+        listener.onMessage(ReceivedMessage("a/b", "first", 0, false, 1))
+        listener.onMessage(ReceivedMessage("a/b", "second", 0, false, 2))
+        listener.onMessage(ReceivedMessage("c", "other", 0, false, 3))
+        val nm = shadowOf(app.getSystemService(NotificationManager::class.java))
+        val latest = nm.getNotification("a/b", MessageNotifications.NOTIFICATION_ID)
+        assertEquals("a/b", latest.extras.getString(Notification.EXTRA_TITLE))
+        assertEquals("second", latest.extras.getString(Notification.EXTRA_TEXT))
+        assertEquals(2L, latest.`when`)
+        assertNotNull(latest.contentIntent)
+        assertTrue(latest.flags and Notification.FLAG_AUTO_CANCEL != 0)
+        assertEquals("other", nm.getNotification("c", MessageNotifications.NOTIFICATION_ID).extras.getString(Notification.EXTRA_TEXT))
+        // The ongoing service notification plus one per topic.
+        assertEquals(3, nm.size())
+        val channel = app.getSystemService(NotificationManager::class.java).getNotificationChannel(MessageNotifications.CHANNEL_ID)
+        assertEquals(NotificationManager.IMPORTANCE_DEFAULT, channel.importance)
+    }
+
+    @Test
+    fun longPayloadIsTruncatedInNotification() {
+        AppGraph.settings.notifyOnMessage = true
+        startService()
+        gateways.single().listener!!.onMessage(ReceivedMessage("t", "x".repeat(5000), 0, false, 1))
+        val n = shadowOf(app.getSystemService(NotificationManager::class.java)).getNotification("t", MessageNotifications.NOTIFICATION_ID)
+        assertEquals(1000, n.extras.getCharSequence(Notification.EXTRA_TEXT)!!.length)
+    }
+
+    @Test
     fun destroyDisconnectsAndClearsController() {
         val controller = startService()
         controller.destroy()

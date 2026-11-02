@@ -62,7 +62,7 @@ object Diagnostics {
             appendLine("Broker: ${describe(settings.loadBroker())}")
             appendLine("Subscriptions (${subscriptions.size}): ${subscriptions.joinToString { "${it.filter} (QoS ${it.qos})" }}")
             appendLine(
-                "Start on boot: ${settings.autoStartOnBoot}, theme: ${AppGraph.themeMode.value}, dynamic color: ${AppGraph.dynamicColor}",
+                "Start on boot: ${settings.autoStartOnBoot}, notify on message: ${settings.notifyOnMessage}, theme: ${AppGraph.themeMode.value}, dynamic color: ${AppGraph.dynamicColor}",
             )
             appendLine("Service running: ${MqttService.isRunning}, status: ${AppGraph.status.value}")
             appendLine(

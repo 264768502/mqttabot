@@ -41,6 +41,7 @@
     <string name="label_tls">TLS verwenden (ssl://)</string>
     <string name="label_clean_session">Saubere Sitzung (Clean Session)</string>
     <string name="label_auto_start">Abonnement-Dienst beim Systemstart starten</string>
+    <string name="label_notify_messages">Bei empfangenen Nachrichten benachrichtigen</string>
     <string name="preset_custom">Benutzerdefiniert</string>
     <string name="publish_sending">Wird gesendet…</string>
     <string name="publish_ok">An %1$s veröffentlicht</string>
@@ -56,6 +57,7 @@
     <string name="error_username">Ein Passwort erfordert einen Benutzernamen</string>
     <string name="notification_channel_name">MQTT-Abonnement-Dienst</string>
     <string name="notification_title">MqttABot hört zu</string>
+    <string name="message_channel_name">Empfangene Nachrichten</string>
     <string name="tasker_publish_label">MqttABot: Veröffentlichen</string>
     <string name="tasker_event_label">MqttABot: Nachricht empfangen</string>
     <string name="tasker_publish_hint">Topic und Inhalt dürfen Tasker-%Variablen enthalten.</string>

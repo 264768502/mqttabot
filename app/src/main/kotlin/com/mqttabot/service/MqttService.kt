@@ -20,12 +20,14 @@ class MqttService : Service() {
 
     private var controller: ConnectionController? = null
     private lateinit var notifications: ServiceNotifications
+    private lateinit var messageNotifications: MessageNotifications
     private val statusListener: (ConnectionStatus) -> Unit = { notifications.update(it) }
 
     override fun onCreate() {
         super.onCreate()
         AppLog.i(TAG, "Created")
         notifications = ServiceNotifications(this)
+        messageNotifications = MessageNotifications(this)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -63,6 +65,7 @@ class MqttService : Service() {
     private fun onMessage(message: ReceivedMessage) {
         AppGraph.messageLog.add(message)
         TaskerEventDispatcher.dispatch(this, message)
+        if (AppGraph.settings.notifyOnMessage) messageNotifications.show(message)
     }
 
     override fun onDestroy() {
