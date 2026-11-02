@@ -1,0 +1,1 @@
+Selector de idioma en la barra superior (automático o cualquier idioma disponible). Notificación opcional al recibir mensajes MQTT, desactivada de forma predeterminada: actívala en la configuración del broker; cada tema muestra su mensaje más reciente.

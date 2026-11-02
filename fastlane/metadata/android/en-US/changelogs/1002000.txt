@@ -1,0 +1,1 @@
+In-app language picker in the top bar (automatic, or any supported language). Optional notification for received MQTT messages, off by default: enable it in broker settings; each topic shows its latest message.

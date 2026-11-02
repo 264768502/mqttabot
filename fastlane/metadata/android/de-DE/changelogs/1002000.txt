@@ -1,0 +1,1 @@
+Sprachauswahl in der oberen Leiste (automatisch oder eine unterstützte Sprache). Optionale Benachrichtigung bei empfangenen MQTT-Nachrichten, standardmäßig aus: in den Broker-Einstellungen aktivieren; pro Topic wird die neueste Nachricht angezeigt.

@@ -18,8 +18,8 @@ android {
         targetSdk = 36
         // Literal values so F-Droid can read them; the release workflow bumps them and checks
         // them against the tag. versionCode = major * 1_000_000 + minor * 1_000 + patch.
-        versionCode = 1001000
-        versionName = "1.1.0"
+        versionCode = 1002000
+        versionName = "1.2.0"
     }
 
     signingConfigs {
